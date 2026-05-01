@@ -1,0 +1,3603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shess | Shuffle Board</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23111' stroke='%238A2BE2' stroke-width='2'/%3E%3Cg transform='translate(1, 4) rotate(20 12 12)'%3E%3Cpath d='M 7 5 L 7 8 L 9 8 L 9 14 L 7 14 L 7 19 L 17 19 L 17 14 L 15 14 L 15 8 L 17 8 L 17 5 L 14 5 L 14 7 L 10 7 L 10 5 L 7 5 z M 7 20 L 7 22 L 17 22 L 17 20 L 7 20 z' fill='%23C0C0C0' /%3E%3C/g%3E%3Cg transform='translate(8, 4) rotate(-20 12 12)'%3E%3Cpath d='M 14 5 C 12 5 10 7 10 7 C 10 7 9 8 8 8 C 7 8 7 9 7 9 C 7 10 8 11 9 11 L 8 13 C 8 13 8 15 8 15 L 8 19 L 16 19 L 16 13 C 16 13 17 11 17 9 C 17 7 16 5 14 5 z M 10.5 7.5 C 11.05 7.5 11.5 7.95 11.5 8.5 C 11.5 9.05 11.05 9.5 10.5 9.5 C 9.95 9.5 9.5 9.05 9.5 8.5 C 9.5 7.95 9.95 7.5 10.5 7.5 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z' fill='%23888' /%3E%3C/g%3E%3Cpath d='M 16 10 L 18 14 L 22 15 L 18 16 L 16 20 L 14 16 L 10 15 L 14 14 Z' fill='%23FFD700' /%3E%3C/svg%3E">
+    <meta name="description" content="Chess on a Shuffle Board, can't be any clearer than that. Play online or against a custom-tuned AI.">
+
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#111111">
+    <meta property="og:url" content="https://shess.oneapp.dev/">
+    <meta property="og:title" content="Shess | Shuffleboard Chess">
+    <meta property="og:description" content="Chess on a Shuffle Board, can't be any clearer than that.">
+    <meta property="og:image" content="https://uploads.onecompiler.io/44d4hjp2y/44ktwquer/Shessthmbnl2.png">
+    <meta property="og:image:width" content="2668">
+    <meta property="og:image:height" content="1408">
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://shess.oneapp.dev/">
+    <meta property="twitter:title" content="Shess | Shuffle Board Chess">
+    <meta property="twitter:description" content="Chess on a Shuffle Board, can't be any clearer than that.">
+    <meta property="twitter:image" content="https://uploads.onecompiler.io/44d4hjp2y/44ktwquer/Shessthmbnl2.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+		
+		/* --- PROCEDURAL ARENA SKINS --- */
+		body.skin-classic { 
+			background: radial-gradient(circle, #2a2a2a 0%, #0a0a0a 100%); 
+		}
+
+		body.skin-wood {
+			background-color: #2c1608;
+			background-image: 
+				radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px),
+				radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px),
+				linear-gradient(to right, #2b1408, #3d1e0d, #2b1408);
+			background-size: 20px 20px, 20px 20px, 100% 100%;
+			background-position: 0 0, 10px 10px, 0 0;
+		}
+
+		body.skin-checkerboard {
+			background-color: #111;
+			background-image:
+				linear-gradient(45deg, #181818 25%, transparent 25%),
+				linear-gradient(-45deg, #181818 25%, transparent 25%),
+				linear-gradient(45deg, transparent 75%, #181818 75%),
+				linear-gradient(-45deg, transparent 75%, #181818 75%);
+			background-size: 80px 80px;
+			background-position: 0 0, 0 40px, 40px -40px, -40px 0px;
+		}
+
+		body.skin-felt { 
+			background: radial-gradient(circle, #1e4d2e 0%, #0c2615 100%); 
+		}
+
+		body.skin-marble { 
+			background: radial-gradient(circle, #f0f2f5 0%, #a0a0a0 100%); 
+		}
+
+        #game-container {
+			position: relative;
+			width: 95vmin;      /* Responsive width */
+			max-width: 800px;   /* Cap at original size */
+			height: 95vmin;     /* Responsive height */
+			max-height: 800px;  /* Cap at original size */
+			box-shadow: 0 15px 50px rgba(0, 0, 0, 0.95);
+			border-radius: 50%;
+		}
+
+		canvas {
+			display: block;
+			width: 100%;        /* Fill the container */
+			height: 100%;       /* Fill the container */
+			border-radius: 50%;
+			touch-action: none; 
+			user-select: none;
+			-webkit-user-select: none;
+		}
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #turn-indicator {
+          position: absolute;
+          top: 0px;
+          width: 100%;
+          font-family: Constantia, "Lucida Bright", Lucidabright, "Lucida Serif", Lucida, "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+          font-size: 20px;
+          font-weight: 400;
+          font-variant: small-caps;
+          letter-spacing: 3px;
+          text-align: center;
+          text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          user-select: none; 
+          pointer-events: none;
+      }
+      
+      @keyframes announceSlide {
+            0% { opacity: 0; transform: translateY(-8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .turn-announce {
+            animation: announceSlide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .player-1-turn { color: #E0E0E0; }
+        .player-2-turn { color: #6f6b73; }
+
+        .captured-box {
+            position: absolute;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 160px; 
+            pointer-events: none;
+        }
+        
+        #captured-p1 { top: 15%; left: calc(50% + 440px); } 
+        #captured-p2 { bottom: 15%; right: calc(50% + 440px); flex-direction: row-reverse; }
+
+        .captured-token {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* --- PROMOTION MENU UI --- */
+        #promotion-menu {
+            display: none;
+            position: absolute;
+            transform: translate(-50%, -110%);
+            background: rgba(15, 15, 15, 0.95);
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 10px;
+            gap: 15px;
+            pointer-events: auto;
+            z-index: 20;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+            flex-direction: row;
+        }
+
+        #promotion-menu::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(15, 15, 15, 0.95) transparent transparent transparent;
+        }
+
+        .promo-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+        }
+
+        .promo-btn:hover {
+            transform: scale(1.15); 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.8);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes overlayFadeIn {
+            0% { opacity: 0; transform: translate(-50%, -35%); } 
+            100% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes modalPopIn {
+            0% { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid white;
+            pointer-events: auto;
+            min-width: 300px;
+            animation: overlayFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        #game-over h1 { margin: 0 0 20px 0; font-size: 48px; }
+        #game-over button {
+            padding: 10px 20px; font-size: 18px; cursor: pointer; margin: 0 5px;
+            background: #333; color: white; border: 1px solid white; border-radius: 5px;
+            transition: background 0.2s;
+        }
+        #game-over button:hover { background: #555; }
+        #rematch-status { margin-top: 15px; font-size: 16px; color: #aaa; }
+
+        /* --- CONTEXTUAL SETTINGS UI --- */
+        #menu-panel {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(20, 20, 20, 0.5); 
+            backdrop-filter: blur(5px); 
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 100;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            pointer-events: auto;
+            min-width: 220px;
+        }
+
+        #menu-panel:hover {
+            background: rgba(30, 30, 30, 0.6);
+        }
+
+        #menu-panel.is-open {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+            cursor: default;
+        }
+
+        #menu-header {
+            font-weight: bold;
+            color: #ddd;
+            margin: 0;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .menu-reveal {
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #menu-panel.is-open .menu-reveal {
+            max-height: 360px;
+            opacity: 1;
+            margin-top: 12px;
+            pointer-events: auto;
+        }
+
+        .menu-section {
+			background: rgba(0,0,0,0.3);
+			padding: 10px;
+			border-radius: 8px;
+			margin-bottom: 8px;
+			border: 1px solid rgba(255,255,255,0.05);
+			/* NEW: Start hidden and squished down */
+			opacity: 0;
+			transform: translateY(15px) scale(0.95);
+			transition: opacity 0.2s ease, transform 0.2s ease; 
+		}
+
+		#network-status {
+			color: #999; 
+			font-style: italic; 
+			text-align: center;
+			/* NEW: Start hidden and squished down */
+			opacity: 0;
+			transform: translateY(15px) scale(0.95);
+			transition: opacity 0.2s ease, transform 0.2s ease;
+		}
+		
+		/* --- MENU CASCADE ANIMATION --- */
+		#menu-panel.is-open .menu-section,
+		#menu-panel.is-open #network-status {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			/* The cubic-bezier gives it that physical weight and bounce */
+			transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		}
+
+		/* Stagger the delays so they pop up in order */
+		#menu-panel.is-open .menu-section:nth-child(1) { transition-delay: 0.1s; } /* Board Setup */
+		#menu-panel.is-open .menu-section:nth-child(2) { transition-delay: 0.2s; } /* Play vs CPU */
+		#menu-panel.is-open .menu-section:nth-child(3) { transition-delay: 0.3s; } /* Play Online */
+		#menu-panel.is-open #network-status            { transition-delay: 0.4s; } /* Status Text */
+
+        .ui-select, .ui-input {
+            padding: 8px; 
+            background: #111; 
+            color: white; 
+            border: 1px solid #555; 
+            border-radius: 6px; 
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .ui-input { font-family: monospace; text-transform: uppercase; }
+        .ui-input:focus, .ui-select:focus { border-color: #8A2BE2; }
+
+        .ui-btn {
+            padding: 8px 14px; 
+            background: #8A2BE2; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        
+        .ui-btn:hover { background: #9d4edd; }
+        .full-width { width: 100%; margin-top: 5px; }
+
+        #my-peer-id {
+            color: #4CAF50; 
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: monospace;
+            font-size: 15px;
+        }
+        #my-peer-id:hover { color: #fff !important; text-shadow: 0 0 8px rgba(76, 175, 80, 0.8); }
+
+        /* --- GEAR & PHYSICS SETTINGS UI --- */
+        #settings-gear {
+            position: absolute;
+            top: 25px;
+            left: -60px; /* Hidden off-screen initially */
+            cursor: pointer;
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            background: rgba(20,20,20,0.7);
+            padding: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #settings-gear.visible { left: 25px; }
+        
+        #settings-gear:hover { 
+            background: rgba(50,50,50,0.9); 
+            border-color: #8A2BE2;
+        }
+        #settings-gear:hover svg {
+            transform: rotate(90deg);
+        }
+        #settings-gear svg {
+            transition: transform 0.4s ease;
+        }
+
+        #settings-modal {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 15, 15, 0.98);
+            border: 2px solid #c6c1c9;
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 200;
+            width: 340px;
+            color: white;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.95);
+            pointer-events: auto;
+            animation: modalPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .active-tab { background-color: #8A2BE2 !important; }
+        .inactive-tab { background-color: #333 !important; color: #aaa !important; }
+        .inactive-tab:hover { background-color: #555 !important; }
+
+        #settings-modal h2 { margin: 0 0 15px 0; text-align: center; font-size: 20px; font-weight: normal; letter-spacing: 1px; text-transform: uppercase; }
+        
+        .config-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: #ccc; }
+        .config-row input[type=range] { flex-grow: 1; margin: 0 10px; cursor: pointer; accent-color: #c6c1c9; }
+
+        .config-input-num {
+            width: 55px;
+            text-align: right;
+            font-family: monospace;
+            color: #fff;
+            font-weight: bold;
+            background: #222;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .config-input-num:focus {
+            border-color: #8A2BE2;
+            background: #111;
+        }
+        .config-input-num::-webkit-outer-spin-button,
+        .config-input-num::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .config-input-num[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        .settings-btn-group { display: flex; gap: 10px; margin-top: 20px; }
+		
+		/* --- RESIGN BUTTON --- */
+        #resign-btn {
+            position: absolute;
+            top: 25px;
+            right: -60px; /* Hidden off-screen initially */
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            background: rgba(20,20,20,0.7);
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            width: 52px;
+            height: 52px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        #resign-btn.visible { right: 25px; }
+        
+        #resign-btn:hover {
+            background: rgba(183, 28, 28, 0.9);
+            border-color: #ff5252;
+            transform: scale(1.1);
+        }
+        
+        /* --- AUTHOR CREDIT --- */
+        #author-credit {
+			position: static; 
+			margin: 0;
+			color: #888888; /* Muted text for the non-clickable parts */
+			font-size: 14px;
+			text-align: center;
+		}
+
+		/* Base style for both links */
+		.credit-link, .support-link {
+			color: #C0C0C0; /* Matches your Player 1 Silver */
+			text-decoration: none; /* Removes the default underline */
+			font-weight: bold;
+			transition: all 0.2s ease-in-out; /* Smooth fade for the hover effect */
+		}
+
+		/* Mute the support text slightly so your name remains the primary focus */
+		.support-link {
+			font-weight: normal;
+			color: #999999; 
+			font-size: 0.9em;
+		}
+
+		.support-divider {
+			margin: 0 6px;
+			color: #444444;
+		}
+
+		/* The sleek hover glow effect */
+		.credit-link:hover, .support-link:hover {
+			color: #FFFFFF;
+			text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.5);
+		}
+		
+		/* Base state for the hidden modal */
+		.help-modal {
+			opacity: 0;
+			transform: scale(0.8); /* Start slightly smaller */
+			visibility: hidden;
+			
+			/* The cubic-bezier gives it a tiny, satisfying bounce at the end of the pop */
+			transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.3s;
+		}
+
+		/* Active state when the modal is opened */
+		.help-modal.show {
+			opacity: 1;
+			transform: scale(1); /* Scale up to full size */
+			visibility: visible;
+		}
+		
+		/* Sleek, Dark Tooltip Aesthetics */
+		.physics-tooltip {
+			opacity: 0; 
+			visibility: hidden; 
+			transition: opacity 0.15s ease-out, visibility 0.15s ease-out; /* Smooth fade */
+			
+			position: absolute; 
+			pointer-events: none; 
+			z-index: 1000; 
+			background: rgba(20, 20, 20, 0.85); 
+			border: 1px solid #444; 
+			border-radius: 6px; 
+			padding: 8px 10px; 
+			width: 130px; 
+			box-shadow: 0 4px 12px rgba(0,0,0,0.7); 
+			backdrop-filter: blur(4px); 
+			font-family: sans-serif;
+		}
+
+		/* NEW: Toggled by JavaScript to fade the tooltip in */
+		.physics-tooltip.is-visible {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		.tt-header {
+			font-size: 12px; 
+			font-weight: bold; 
+			color: #E0E0E0;
+			margin-bottom: 8px; 
+			text-align: center; 
+			border-bottom: 1px solid #444; 
+			padding-bottom: 4px;
+			letter-spacing: 1px;
+		}
+
+		.tt-row {
+			display: flex; 
+			align-items: center; 
+			margin-bottom: 5px;
+		}
+
+		.tt-label {
+			font-size: 9px; 
+			width: 45px; 
+			color: #888; 
+			text-transform: uppercase; 
+			font-weight: bold;
+		}
+
+		.tt-track {
+			flex-grow: 1; 
+			height: 6px; 
+			background: #222; 
+			border: 1px solid #111;
+			border-radius: 3px; 
+			overflow: hidden; 
+		}
+
+		.tt-fill {
+			height: 100%; 
+			width: 0%; 
+			transition: width 0.15s ease-out; /* Smoothly animates the bars */
+		}
+		
+		#webview-jail {
+			display: none;
+			position: fixed;
+			top: 0; left: 0; width: 100%; height: 100%;
+			background: #111;
+			z-index: 9999;
+			color: white;
+			text-align: center;
+			padding: 40px 20px;
+			box-sizing: border-box;
+			font-family: sans-serif;
+		}
+		.jail-icon { font-size: 60px; margin-bottom: 20px; }
+		.jail-text { font-size: 18px; line-height: 1.5; color: #E0E0E0; margin-bottom: 30px; }
+		.jail-highlight { color: #8A2BE2; font-weight: bold; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+		@media screen and (max-width: 768px) {
+			/* Notice the body scaling is completely gone! */
+			
+			/* Gently scale down the UI text/buttons so they aren't bulky on small screens */
+			#menu-panel { 
+				transform: scale(.85); 
+				transform-origin: bottom right; 
+				bottom: 15px; 
+				right: 15px; 
+			}
+			
+			#author-credit { 
+				transform: scale(.8); 
+				transform-origin: bottom left; 
+				bottom: 15px; 
+				left: 15px; 
+			}
+			
+			/* UI elements hide just off-screen natively */
+			#settings-gear { 
+				transform: scale(.85); 
+				transform-origin: top left; 
+				top: 15px; 
+				left: -60px; 
+			}
+			#settings-gear.visible { left: 15px; }
+			
+			#resign-btn { 
+				transform: scale(.85); 
+				transform-origin: top right; 
+				top: 15px; 
+				right: -60px; 
+			}
+			#resign-btn.visible { right: 15px; }
+		}
+    </style>
+</head>
+<body class="skin-classic">
+
+	<div id="webview-jail">
+		<div class="jail-icon">🚫</div>
+		<div class="jail-text">
+			It looks like you are using an in-app browser!<br><br>
+			To run <span class="jail-highlight">Shess</span> please tap the menu icon (usually <b>•••</b> or an arrow in the corner) and select:<br><br>
+			<span class="jail-highlight">"Open in Browser"</span> or <span class="jail-highlight">"Open in Safari/Chrome"</span>
+		</div>
+	</div>
+
+    <div style="position: absolute; bottom: 15px; left: 20px; display: flex; align-items: center; gap: 8px; z-index: 100;">
+		<div onclick="document.getElementById('help-modal').classList.add('show')" 
+			 style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.4); color: rgba(255, 255, 255, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 11px; font-weight: bold; font-family: monospace; transition: all 0.2s;"
+			 onmouseover="this.style.color='#FFF'; this.style.borderColor='#FFF'" 
+			 onmouseout="this.style.color='rgba(255, 255, 255, 0.4)'; this.style.borderColor='rgba(255, 255, 255, 0.4)'"
+			 title="How to Play">
+			?
+		</div>
+		<div id="author-credit">
+			a game by <a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="credit-link">theodore m.</a>
+			<span class="support-divider">|</span> 
+			<a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="support-link">☕</a>
+		</div>
+	</div>
+
+    <div id="settings-gear" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
+            <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+            <circle cx="12" cy="12" r="2.5" fill="#111" />
+        </svg>
+    </div>
+	
+	<div id="resign-btn" onclick="handleResign()" title="Resign Match">
+        🏳️
+    </div>
+
+    <div id="settings-modal">
+        <div id="settings-tabs" style="display: flex; gap: 5px; margin-bottom: 15px;">
+            <button class="ui-btn full-width active-tab" onclick="switchSettingsTab('physics')" id="tab-physics">Physics</button>
+            <button class="ui-btn full-width inactive-tab" onclick="switchSettingsTab('cpu')" id="tab-cpu">CPU Brain</button>
+        </div>
+
+        <div id="settings-physics">
+			<div style="font-size: 11px; color: #8A2BE2; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">Arena Settings</div>
+			
+			<div class="config-row">
+				Arena Theme
+				<select id="conf-skin" class="ui-select" style="width: 160px; margin: 0; padding: 4px;">
+					<option value="Classic">Midnight Classic</option>
+					<option value="Wood">Grandmaster Wood</option>
+					<option value="Checkerboard">Tournament Grid</option>
+					<option value="Felt">Emerald Felt</option>
+					<option value="Marble">Royal Marble</option>
+				</select>
+			</div>
+			<div class="config-row" style="justify-content: flex-start; gap: 10px;">
+                <input type="checkbox" id="conf-wall-enable" onchange="toggleWallSlider()" style="width: 16px; height: 16px; accent-color: #8A2BE2; cursor: pointer;">
+                <label for="conf-wall-enable" style="cursor: pointer; user-select: none;">Perimeter Wall</label>
+            </div>
+            <div class="config-row" id="wall-rest-row" style="display: none;">
+                Wall Bounciness <input type="range" id="conf-wall-rest" min="0" max="2.0" step="0.1"> <input type="number" id="val-wall-rest" class="config-input-num" step="0.1">
+            </div>
+            
+            <div style="font-size: 11px; color: #8A2BE2; margin-bottom: 5px; margin-top: 15px; text-transform: uppercase; font-weight: bold;">Piece Settings</div>
+			<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+            <button class="ui-btn" style="flex: 0 0 auto; padding: 8px 12px; font-size: 12px; min-width: unset;" onclick="cyclePiece(-1)" title="Previous Piece">◄</button>
+            <select id="config-piece" class="ui-select" style="flex: 1; margin-bottom: 0;" onchange="handlePieceSelectChange()">
+                <option value="King">King</option>
+                <option value="Queen">Queen</option>
+                <option value="Rook">Rook</option>
+                <option value="Bishop">Bishop</option>
+                <option value="Knight">Knight</option>
+                <option value="Pawn">Pawn</option>
+            </select>
+            <button class="ui-btn" style="flex: 0 0 auto; padding: 8px 12px; font-size: 12px; min-width: unset;" onclick="cyclePiece(1)" title="Next Piece">►</button>
+        </div>
+            
+            <div class="config-row">Mass <input type="range" id="conf-mass" min="5" max="400" step="1"> <input type="number" id="val-mass" class="config-input-num"></div>
+            <div class="config-row">Friction <input type="range" id="conf-fric" min="0" max="0.5" step="0.01"> <input type="number" id="val-fric" class="config-input-num" step="0.01"></div>
+            <div class="config-row">Bounciness <input type="range" id="conf-rest" min="0" max="1.5" step="0.1"> <input type="number" id="val-rest" class="config-input-num" step="0.1"></div>
+            <div class="config-row">Size (Radius) <input type="range" id="conf-rad" min="10" max="50" step="1"> <input type="number" id="val-rad" class="config-input-num"></div>
+            <div class="config-row">Max Drag <input type="range" id="conf-drag" min="20" max="200" step="5"> <input type="number" id="val-drag" class="config-input-num"></div>
+            <div class="config-row">Sturdiness <input type="range" id="conf-hp" min="10" max="2000" step="10"> <input type="number" id="val-hp" class="config-input-num"></div>
+            <div class="config-row">Jump Radius <input type="range" id="conf-hop" min="0" max="300" step="5"> <input type="number" id="val-hop" class="config-input-num"></div>
+        </div>
+
+        <div id="settings-cpu" style="display: none;">
+            <div style="font-size: 11px; color: #8A2BE2; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">Time Machine (Minimax)</div>
+            <div class="config-row">Moves Evaluated <input type="range" id="ai-breadth" min="1" max="12" step="1"> <input type="number" id="val-ai-breadth" class="config-input-num"></div>
+            <div class="config-row">Sim Ticks (Time) <input type="range" id="ai-ticks" min="30" max="300" step="10"> <input type="number" id="val-ai-ticks" class="config-input-num"></div>
+            
+            <div style="font-size: 11px; color: #8A2BE2; margin-bottom: 5px; margin-top: 15px; text-transform: uppercase; font-weight: bold;">Heuristic Weights</div>
+            <div class="config-row">Bloodthirst <input type="range" id="ai-blood" min="0" max="2000" step="100"> <input type="number" id="val-ai-blood" class="config-input-num"></div>
+            <div class="config-row">King Execution <input type="range" id="ai-assassin" min="0" max="10000" step="500"> <input type="number" id="val-ai-assassin" class="config-input-num"></div>
+            <div class="config-row">Self-Preservation <input type="range" id="ai-loss" min="0.5" max="3.0" step="0.1"> <input type="number" id="val-ai-loss" class="config-input-num" step="0.1"></div>
+            <div class="config-row">Flee/Cowardice <input type="range" id="ai-flee" min="0" max="2000" step="100"> <input type="number" id="val-ai-flee" class="config-input-num"></div>
+        </div>
+        
+		<div style="font-size: 11px; color: #8A2BE2; margin-bottom: 5px; margin-top: 15px; text-transform: uppercase; font-weight: bold;">Presets</div>
+        <select id="preset-selector" class="ui-select" style="margin-bottom: 15px;" onchange="applyBuiltInPreset()">
+            <option value="" disabled selected>Load a physics preset...</option>
+            <option value="Standard">Standard (Classic Shess)</option>
+            <option value="IceRink">Ice Rink</option>
+            <option value="Sumo">Sumo Heavyweights</option>
+            <option value="Pinball">Pinball Bumper Cars</option>
+            <option value="GlassCannons">Glass Cannons</option>
+            <option value="TrenchWarfare">Trench Warfare</option>
+            <option value="Juggernaut">Juggernaut King</option>
+            <option value="Featherweights">Featherweights</option>
+            <option value="Cavalry">Cavalry Charge</option>
+            <option value="Billiards">Billiards</option>
+        </select>
+		
+        <input type="file" id="config-load-input" accept=".json" style="display: none;" onchange="handleConfigLoad(event)">
+        
+        <div class="settings-btn-group" style="margin-bottom: 10px;">
+            <button class="ui-btn full-width" onclick="exportConfig()" style="background-color: #555;" title="Save tuning to PC">💾 Export Tuning</button>
+            <button class="ui-btn full-width" onclick="document.getElementById('config-load-input').click()" style="background-color: #555" title="Load tuning from PC">📂 Import Tuning</button>
+        </div>
+        <div class="settings-btn-group" style="margin-top: 0;">
+            <button class="ui-btn full-width" onclick="saveConfig()" style="background-color: #4CAF50;">Apply & Restart</button>
+            <button class="ui-btn full-width" onclick="closeSettings()" style="background-color: #555;">Cancel</button>
+        </div>
+    </div>
+	
+	<div id="help-modal" class="help-modal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); justify-content: center; align-items: center; z-index: 3000;">
+        <div style="position: relative; width: 580px; max-width: 95%; text-align: center; background: linear-gradient(160deg, #1c1c1c 0%, #111 100%); padding: 40px 28px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 20px 60px rgba(0,0,0,0.95);">
+            
+            <div onclick="document.getElementById('help-modal').classList.remove('show')"
+                 style="position: absolute; top: 12px; right: 16px; font-size: 28px; font-weight: 300; color: #555; cursor: pointer; line-height: 1; transition: color 0.2s; user-select: none; font-family: sans-serif;"
+                 onmouseover="this.style.color='#E0E0E0'" 
+                 onmouseout="this.style.color='#555'">
+                &times;
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: 15px;">
+                
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <svg viewBox="0 0 110 130" width="110" height="130" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="55" cy="32" r="22" fill="#C0C0C0" stroke="#E0E0E0" stroke-width="2"/>
+                        <g transform="translate(43, 20) scale(1.0)">
+                            <path d="M 12 6 C 10.34 6 9 7.34 9 9 C 9 10.37 9.93 11.53 11.2 11.87 L 9 17 L 15 17 L 12.8 11.87 C 14.07 11.53 15 10.37 15 9 C 15 7.34 13.66 6 12 6 z M 7 18 L 7 20 L 17 20 L 17 18 L 7 18 z" fill="#111"/>
+                        </g>
+                        <line x1="55" y1="54" x2="55" y2="78" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-dasharray="5,5"/>
+                        <polygon points="55,86 49,76 61,76" fill="rgba(255,255,255,0.35)"/>
+                        
+                        <g stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round">
+                            <line x1="50" y1="94" x2="50" y2="82" />
+                            <line x1="40" y1="106" x2="35" y2="96" />
+                            <line x1="64" y1="108" x2="69" y2="98" />
+                        </g>
+
+                        <g transform="translate(55, 78) scale(1.3)">
+                            <path d="M0,0 L14,14 L8,14 L12,23 L8,24 L4,15 L-2,20 Z" fill="#FFF" stroke="#222" stroke-width="1.5" stroke-linejoin="round"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <svg viewBox="0 0 110 130" width="110" height="130" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 55 110 Q 20 60 55 32" stroke="rgba(255,255,255,0.25)" stroke-width="2" fill="none" stroke-dasharray="4,4"/>
+                        <line x1="43" y1="45" x2="22" y2="60" stroke="rgba(255,255,255,0.12)" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="44" y1="52" x2="18" y2="70" stroke="rgba(255,255,255,0.09)" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="46" y1="59" x2="16" y2="80" stroke="rgba(255,255,255,0.06)" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="55" cy="32" r="22" fill="#C0C0C0" stroke="#E0E0E0" stroke-width="2"/>
+                        <g transform="translate(43, 20)">
+                            <path d="M 12 6 C 10.34 6 9 7.34 9 9 C 9 10.37 9.93 11.53 11.2 11.87 L 9 17 L 15 17 L 12.8 11.87 C 14.07 11.53 15 10.37 15 9 C 15 7.34 13.66 6 12 6 z M 7 18 L 7 20 L 17 20 L 17 18 L 7 18 z" fill="#111"/>
+                        </g>
+                        
+                        <g transform="translate(55, 100) scale(1.3)">
+                            <path d="M0,0 L14,14 L8,14 L12,23 L8,24 L4,15 L-2,20 Z" fill="#FFF" stroke="#222" stroke-width="1.5" stroke-linejoin="round"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                    <svg viewBox="0 0 110 130" width="110" height="130" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="55" cy="35" r="22" fill="#2b2b2b" stroke="#555" stroke-width="2"/>
+                        <g transform="translate(43.5, 22.5) scale(0.94)">
+                            <path d="M 7 5 L 7 8 L 9 8 L 9 14 L 7 14 L 7 19 L 17 19 L 17 14 L 15 14 L 15 8 L 17 8 L 17 5 L 14 5 L 14 7 L 10 7 L 10 5 L 7 5 z M 7 20 L 7 22 L 17 22 L 17 20 L 7 20 z" fill="#E0E0E0"/>
+                        </g>
+                        <path d="M 55 35 L 49 26 L 43 21" stroke="rgba(0,0,0,0.9)" stroke-width="1.6" fill="none" stroke-linecap="butt"/>
+                        <path d="M 49 26 L 45 23" stroke="rgba(0,0,0,0.7)" stroke-width="0.8" fill="none"/>
+                        <path d="M 55 35 L 62 25 L 67 20" stroke="rgba(0,0,0,0.9)" stroke-width="1.4" fill="none" stroke-linecap="butt"/>
+                        <path d="M 55 35 L 66 31 L 76 33" stroke="rgba(0,0,0,0.85)" stroke-width="1.5" fill="none" stroke-linecap="butt"/>
+                        <path d="M 66 31 L 69 27" stroke="rgba(0,0,0,0.6)" stroke-width="0.7" fill="none"/>
+                        <path d="M 55 35 L 63 44 L 68 51" stroke="rgba(0,0,0,0.9)" stroke-width="1.3" fill="none" stroke-linecap="butt"/>
+                        <path d="M 55 35 L 46 45 L 40 52" stroke="rgba(0,0,0,0.85)" stroke-width="1.6" fill="none" stroke-linecap="butt"/>
+                        <path d="M 46 45 L 43 48" stroke="rgba(0,0,0,0.6)" stroke-width="0.7" fill="none"/>
+                        <path d="M 55 35 L 44 31 L 36 28" stroke="rgba(0,0,0,0.9)" stroke-width="1.4" fill="none" stroke-linecap="butt"/>
+
+                        <circle cx="55" cy="35" r="4" fill="rgba(255,255,255,0.08)"/>
+
+                        <circle cx="30" cy="95" r="18" fill="#C0C0C0" stroke="#E0E0E0" stroke-width="2"/>
+                        <g transform="translate(19, 83) scale(0.93)">
+                            <path d="M 12 6 C 10.34 6 9 7.34 9 9 C 9 10.37 9.93 11.53 11.2 11.87 L 9 17 L 15 17 L 12.8 11.87 C 14.07 11.53 15 10.37 15 9 C 15 7.34 13.66 6 12 6 z M 7 18 L 7 20 L 17 20 L 17 18 L 7 18 z" fill="#111"/>
+                        </g>
+
+                        <rect x="35" y="62" width="40" height="5" rx="2.5" fill="#222" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+                        <rect x="35" y="62" width="14" height="5" rx="2.5" fill="#888"/>
+                    </svg>
+                </div>
+                
+            </div>
+
+            <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 28px 0;"></div>
+
+            <div style="display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="King">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 12 2 L 12 4 L 10 4 L 10 6 L 12 6 L 12 8 L 10 8 L 10 10 L 14 10 L 14 8 L 12 8 L 12 6 L 14 6 L 14 4 L 12 4 L 12 2 z M 8 11 L 8 14 L 16 14 L 16 11 L 8 11 z M 8 15 L 8 19 L 16 19 L 16 15 L 8 15 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z" fill="#111"/></svg>
+                </div>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="Queen">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 12 4 L 9 9 L 5 6 L 7 14 L 17 14 L 19 6 L 15 9 L 12 4 z M 7 15 L 7 19 L 17 19 L 17 15 L 7 15 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z" fill="#111"/></svg>
+                </div>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="Rook">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 7 5 L 7 8 L 9 8 L 9 14 L 7 14 L 7 19 L 17 19 L 17 14 L 15 14 L 15 8 L 17 8 L 17 5 L 14 5 L 14 7 L 10 7 L 10 5 L 7 5 z M 7 20 L 7 22 L 17 22 L 17 20 L 7 20 z" fill="#111"/></svg>
+                </div>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="Bishop">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 12 2 C 10.5 2 9.5 3 9.5 4.5 C 9.5 5.5 10 6 11 6.5 C 9.5 8.5 8 12 8 14 L 16 14 C 16 12 14.5 8.5 13 6.5 C 14 6 14.5 5.5 14.5 4.5 C 14.5 3 13.5 2 12 2 z M 7 15 L 7 17 L 17 17 L 17 15 L 7 15 z M 6 18 L 6 20 L 18 20 L 18 18 L 6 18 z" fill="#111"/></svg>
+                </div>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="Knight">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 14 5 C 12 5 10 7 10 7 C 10 7 9 8 8 8 C 7 8 7 9 7 9 C 7 10 8 11 9 11 L 8 13 C 8 13 8 15 8 15 L 8 19 L 16 19 L 16 13 C 16 13 17 11 17 9 C 17 7 16 5 14 5 z M 10.5 7.5 C 11.05 7.5 11.5 7.95 11.5 8.5 C 11.5 9.05 11.05 9.5 10.5 9.5 C 9.95 9.5 9.5 9.05 9.5 8.5 C 9.5 7.95 9.95 7.5 10.5 7.5 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z" fill="#111"/></svg>
+                </div>
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: #C0C0C0; border: 1.5px solid #E0E0E0; display:flex; align-items:center; justify-content:center;" title="Pawn">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M 12 6 C 10.34 6 9 7.34 9 9 C 9 10.37 9.93 11.53 11.2 11.87 L 9 17 L 15 17 L 12.8 11.87 C 14.07 11.53 15 10.37 15 9 C 15 7.34 13.66 6 12 6 z M 7 18 L 7 20 L 17 20 L 17 18 L 7 18 z" fill="#111"/></svg>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="menu-panel" onclick="toggleMenuPanel(event)">
+        <div id="menu-header">• • •</div>
+        <div class="menu-reveal">
+            
+            <div class="menu-section">
+                <div style="font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase;">Board Setup</div>
+                <select id="challenge-select" class="ui-select" style="font-size: 12px; font-weight: bold; color: #E0E0E0;" onchange="handleChallengeChange()">
+                    <option value="Standard">Challenge: None (Standard)</option>
+                    <option value="Phalanx">1. The Phalanx (King & Pawns)</option>
+                    <option value="Cavalry">2. Cavalry Charge (All Knights)</option>
+                    <option value="Trench">3. Trench Warfare (Pawn Walls)</option>
+                    <option value="Sniper">4. Sniper Alley (Corner Rooks)</option>
+                    <option value="RoyalGuard">5. The Royal Guard (Queens)</option>
+                    <option value="PeasantUprising">6. Peasant Uprising (Mass Pawns)</option>
+                    <option value="DavidGoliath">7. David vs Goliath</option>
+                    <option value="Scattered">8. Scattered Skirmish</option>
+                    <option value="CastleSiege">9. Castle Siege</option>
+                    <option value="QuickDraw">10. Quick Draw (Duel)</option>
+                    <option value="Ambush">11. The Ambush</option>
+                    <option value="VipEscort">12. VIP Escort</option>
+                    <option value="Traitor">13. Traitor's Court</option>
+                    <option value="Gauntlet">14. The Gauntlet</option>
+                    <option value="LoneWolf">15. Lone Wolf</option>
+                    <option value="Crossfire">16. Crossfire</option>
+                    <option value="NoMansLand">17. No Man's Land</option>
+                    <option value="Checkpoint">18. Checkpoint</option>
+                    <option value="QueensGambit">19. Queen's Gambit</option>
+                    <option value="TrojanHorse">20. Trojan Horse</option>
+                </select>
+				
+				<div style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
+					<input type="checkbox" id="advanced-hud-toggle" onchange="toggleAdvancedHUD()" style="cursor: pointer; accent-color: #555;">
+					<label for="advanced-hud-toggle" style="font-size: 11px; color: #aaa; cursor: pointer; user-select: none;">Enable Advanced HUD</label>
+				</div>
+            </div>
+
+            <div class="menu-section">
+                <div style="font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase;">Play vs CPU</div>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <select id="cpu-color" class="ui-select">
+                        <option value="2">Play as Silver (P1)</option>
+                        <option value="1">Play as Dark (P2)</option>
+                    </select>
+                    <select id="cpu-difficulty" class="ui-select" style="width: 85px; text-align: center;">
+                        <option value="Easy">⋆</option>
+                        <option value="Average">⋆ ⋆</option>
+                        <option value="Skilled" selected>⋆ ⋆ ⋆</option>
+                        <option value="Custom">🪛</option>
+                    </select>
+                </div>
+                <button class="ui-btn full-width" onclick="startCPUMatch()">Start CPU Match</button>
+            </div>
+
+            <div class="menu-section">
+                <div style="font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase;">Play Online</div>
+                <div style="font-size: 12px; margin-bottom: 5px;">My Code: <strong id="my-peer-id" title="Click to copy code">Loading...</strong></div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="friend-id-input" class="ui-input" placeholder="CODE" maxlength="8">
+                    <button class="ui-btn" onclick="connectToPeer()">Join</button>
+                </div>
+            </div>
+
+            <div id="network-status" style="color: #999; font-style: italic; text-align: center;">Status: Local Match</div>
+        </div>
+    </div>
+
+    <div id="captured-p2" class="captured-box"></div>
+
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="turn-indicator" class="player-1-turn">Player 1 (Silver) Turn</div>
+            <div id="promotion-menu"></div>
+            <div id="game-over">
+                <h1 id="win-message">PLAYER X WINS!</h1>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button onclick="handleRematch()">Rematch</button>
+                    <button onclick="handleQuit()">Quit</button>
+                </div>
+                <div id="rematch-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="captured-p1" class="captured-box"></div>
+	
+	<div id="physics-tooltip" class="physics-tooltip">
+		<div id="tt-name" class="tt-header">PIECE</div>
+		<div class="tt-row">
+			<span class="tt-label">Mass</span>
+			<div class="tt-track"><div id="tt-mass" class="tt-fill" style="background: #4CAF50;"></div></div>
+		</div>
+		<div class="tt-row">
+			<span class="tt-label">Fric.</span>
+			<div class="tt-track"><div id="tt-frict" class="tt-fill" style="background: #2196F3;"></div></div>
+		</div>
+		<div class="tt-row">
+			<span class="tt-label">Bounce</span>
+			<div class="tt-track"><div id="tt-bounce" class="tt-fill" style="background: #FFC107;"></div></div>
+		</div>
+		<div class="tt-row">
+			<span class="tt-label">Sturd.</span>
+			<div class="tt-track"><div id="tt-sturd" class="tt-fill" style="background: #ff5252;"></div></div>
+		</div>
+	</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        // --- 1. CONFIGURATION & CONSTANTS ---
+        const Engine = Matter.Engine, Render = Matter.Render,
+              Bodies = Matter.Bodies, Body = Matter.Body, Composite = Matter.Composite,
+              Events = Matter.Events, Query = Matter.Query;
+
+        const CANVAS_SIZE = 800; const CENTER = CANVAS_SIZE / 2; const DOHYO_RADIUS = 350;
+        const MAX_HOP_RADIUS = 100; 
+        const P1_PROMO_LINE = 650; const P2_PROMO_LINE = 150;
+        const P1_COLOR = '#C0C0C0'; const P2_COLOR = '#2b2b2b'; 
+        const DAMAGE_SCALAR = 0.08; 
+
+        const PATHS = {
+            King:   "M 12 2 L 12 4 L 10 4 L 10 6 L 12 6 L 12 8 L 10 8 L 10 10 L 14 10 L 14 8 L 12 8 L 12 6 L 14 6 L 14 4 L 12 4 L 12 2 z M 8 11 L 8 14 L 16 14 L 16 11 L 8 11 z M 8 15 L 8 19 L 16 19 L 16 15 L 8 15 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z",
+            Queen:  "M 12 4 L 9 9 L 5 6 L 7 14 L 17 14 L 19 6 L 15 9 L 12 4 z M 7 15 L 7 19 L 17 19 L 17 15 L 7 15 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z",
+            Rook:   "M 7 5 L 7 8 L 9 8 L 9 14 L 7 14 L 7 19 L 17 19 L 17 14 L 15 14 L 15 8 L 17 8 L 17 5 L 14 5 L 14 7 L 10 7 L 10 5 L 7 5 z M 7 20 L 7 22 L 17 22 L 17 20 L 7 20 z",
+            Bishop: "M 12 2 C 10.5 2 9.5 3 9.5 4.5 C 9.5 5.5 10 6 11 6.5 C 9.5 8.5 8 12 8 14 L 16 14 C 16 12 14.5 8.5 13 6.5 C 14 6 14.5 5.5 14.5 4.5 C 14.5 3 13.5 2 12 2 z M 7 15 L 7 17 L 17 17 L 17 15 L 7 15 z M 6 18 L 6 20 L 18 20 L 18 18 L 6 18 z",
+            Knight: "M 14 5 C 12 5 10 7 10 7 C 10 7 9 8 8 8 C 7 8 7 9 7 9 C 7 10 8 11 9 11 L 8 13 C 8 13 8 15 8 15 L 8 19 L 16 19 L 16 13 C 16 13 17 11 17 9 C 17 7 16 5 14 5 z M 10.5 7.5 C 11.05 7.5 11.5 7.95 11.5 8.5 C 11.5 9.05 11.05 9.5 10.5 9.5 C 9.95 9.5 9.5 9.05 9.5 8.5 C 9.5 7.95 9.95 7.5 10.5 7.5 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z",
+            Pawn:   "M 12 6 C 10.34 6 9 7.34 9 9 C 9 10.37 9.93 11.53 11.2 11.87 L 9 17 L 15 17 L 12.8 11.87 C 14.07 11.53 15 10.37 15 9 C 15 7.34 13.66 6 12 6 z M 7 18 L 7 20 L 17 20 L 17 18 L 7 18 z"
+        };
+		
+		const DEFAULT_PIECE_CONFIG = {
+			'King':   { count: 1, mass: 120, frictionAir: 0.25, restitution: 0.1, radius: 25, maxDrag: 85, maxSturdiness: 400, maxHop: 0, svgPath: PATHS.King },
+			'Queen':  { count: 1, mass: 80,  frictionAir: 0.04, restitution: 0.6, radius: 22, maxDrag: 85, maxSturdiness: 350, maxHop: 0, svgPath: PATHS.Queen },
+			'Rook':   { count: 2, mass: 100, frictionAir: 0.08, restitution: 0.2, radius: 20, maxDrag: 75, maxSturdiness: 600, maxHop: 0, svgPath: PATHS.Rook },
+			'Bishop': { count: 2, mass: 35,  frictionAir: 0.02, restitution: 0.7, radius: 13, maxDrag: 100, maxSturdiness: 400, maxHop: 0, svgPath: PATHS.Bishop },
+			'Knight': { count: 2, mass: 35,  frictionAir: 0.04, restitution: 0.5, radius: 20, maxDrag: 75, maxSturdiness: 400, maxHop: 100, svgPath: PATHS.Knight },
+			'Pawn':   { count: 8, mass: 25,  frictionAir: 0.055, restitution: 0.6, radius: 15, maxDrag: 50, maxSturdiness: 220, maxHop: 0, svgPath: PATHS.Pawn }
+		};
+
+        // Made this a mutable object (let) so the config panel can modify it!
+		let PIECE_CONFIG = JSON.parse(JSON.stringify(DEFAULT_PIECE_CONFIG));
+		
+		const PHYSICS_PRESETS = {
+			"Standard": {}, // Loads the base defaults
+			
+			"IceRink": {
+				board: { wallEnabled: true, wallRestitution: 0.5 },
+				brain: { breadth: 6, inaccuracy: 0 }, // AI needs to think harder about sliding
+				pieces: {
+					King: { frictionAir: 0.01 }, Queen: { frictionAir: 0.005 },
+					Rook: { frictionAir: 0.002 }, Bishop: { frictionAir: 0.002 },
+					Knight: { frictionAir: 0.005 }, Pawn: { frictionAir: 0.01 }
+				}
+			},
+			
+			"Sumo": {
+				board: { wallEnabled: false },
+				brain: { bloodthirst: 2000, lossAversion: 0.5 }, // AI wants to push
+				pieces: {
+					King: { mass: 300, frictionAir: 0.4 }, Queen: { mass: 400, frictionAir: 0.2 },
+					Rook: { mass: 350, frictionAir: 0.1 }, Bishop: { mass: 150, frictionAir: 0.1 },
+					Knight: { mass: 150, frictionAir: 0.1 }, Pawn: { mass: 300, frictionAir: 0.15 }
+				}
+			},
+			
+			"Pinball": {
+				board: { wallEnabled: true, wallRestitution: 1.5 },
+				pieces: {
+					King: { restitution: 1.2 }, Queen: { restitution: 1.2 },
+					Rook: { restitution: 1.2 }, Bishop: { restitution: 1.2 },
+					Knight: { restitution: 1.2 }, Pawn: { restitution: 1.2 }
+				}
+			},
+			
+			"GlassCannons": {
+				brain: { assassin: 5000, cowardice: 1000 },
+				pieces: {
+					King: { maxSturdiness: 100 }, Queen: { maxSturdiness: 200, maxDrag: 150 },
+					Rook: { maxSturdiness: 150, maxDrag: 180 }, Bishop: { maxSturdiness: 50, maxDrag: 150 },
+					Knight: { maxSturdiness: 50, maxDrag: 120 }, Pawn: { maxSturdiness: 100, maxDrag: 120 }
+				}
+			},
+			
+			"TrenchWarfare": {
+				board: { wallEnabled: false },
+				pieces: {
+					King: { restitution: 0, maxSturdiness: 1000 }, Queen: { restitution: 0, maxSturdiness: 2000 },
+					Rook: { restitution: 0, maxSturdiness: 1500 }, Bishop: { restitution: 0, maxSturdiness: 800 },
+					Knight: { restitution: 0, maxSturdiness: 800 }, Pawn: { restitution: 0, maxSturdiness: 2500 }
+				}
+			},
+			
+			"Juggernaut": {
+				brain: { cowardice: 0 }, // King fears nothing
+				pieces: {
+					King: { mass: 1000, maxSturdiness: 5000, radius: 40, frictionAir: 0.05 },
+					Queen: { mass: 50 }, Rook: { mass: 50 }, Bishop: { mass: 20 },
+					Knight: { mass: 20 }, Pawn: { mass: 40 }
+				}
+			},
+			
+			"Featherweights": {
+				board: { wallEnabled: true },
+				pieces: {
+					King: { mass: 30 }, Queen: { mass: 45 }, Rook: { mass: 40 },
+					Bishop: { mass: 10 }, Knight: { mass: 10 }, Pawn: { mass: 50 }
+				}
+			},
+			
+			"Cavalry": {
+				pieces: {
+					Rook: { maxHop: 80 }, Pawn: { maxHop: 50 },
+					Knight: { maxHop: 200, frictionAir: 0.01 }
+				}
+			},
+			
+			"Billiards": {
+				board: { wallEnabled: true, wallRestitution: 0.9 },
+				pieces: {
+					King: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 },
+					Queen: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 },
+					Rook: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 },
+					Bishop: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 },
+					Knight: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 },
+					Pawn: { mass: 100, restitution: 0.9, frictionAir: 0.02, radius: 20 }
+				}
+			}
+		};
+
+        Object.keys(PIECE_CONFIG).forEach(key => PIECE_CONFIG[key].path2D = new Path2D(PIECE_CONFIG[key].svgPath));
+        
+        const BRAIN_PRESETS = {
+            'Easy':    { breadth: 1, ticks: 60,  bloodthirst: 100, assassin: 1000, cowardice: 100, lossAversion: 1.0, inaccuracy: 0.4 },
+            'Average': { breadth: 1, ticks: 60,  bloodthirst: 300, assassin: 2000, cowardice: 200, lossAversion: 1.2, inaccuracy: 0.15 },
+            'Skilled': { breadth: 5, ticks: 120, bloodthirst: 500, assassin: 3000, cowardice: 300, lossAversion: 1.5, inaccuracy: 0.0 }
+        };
+        
+        // --- IMMUTABLE DEFAULTS ---
+        const DEFAULT_BOARD_CONFIG = { wallEnabled: true, wallRestitution: 0.8, skin: 'Classic' };
+        const DEFAULT_BRAIN_CONFIG = JSON.parse(JSON.stringify(BRAIN_PRESETS['Skilled']));
+
+        // --- MUTABLE LIVE STATE ---
+        // New Arena State
+        let BOARD_CONFIG = JSON.parse(JSON.stringify(DEFAULT_BOARD_CONFIG));
+        let CUSTOM_BRAIN = JSON.parse(JSON.stringify(DEFAULT_BRAIN_CONFIG));
+        let wallBodies = [];
+
+        let currentChallenge = 'Standard';
+		
+		// --- VISUAL PARTICLE SYSTEM ---
+        let visualParticles = [];
+
+        function spawnShatterParticles(x, y, color, impactForce = 5, pieceRadius = 20) {
+            // Break the piece into 4 to 6 heavy, distinct chunks
+            const numChunks = 4 + Math.floor(Math.random() * 3);
+            let currentAngle = Math.random() * Math.PI * 2; 
+            
+            for (let i = 0; i < numChunks; i++) {
+                const sliceAngle = (Math.PI * 2) / numChunks + (Math.random() - 0.5) * 0.5;
+                const nextAngle = currentAngle + sliceAngle;
+                const midAngle = currentAngle + sliceAngle / 2;
+                
+                const speed = 1 + Math.random() * 1.5; 
+                
+                visualParticles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(midAngle) * speed,
+                    vy: Math.sin(midAngle) * speed,
+                    radius: pieceRadius, 
+                    startAngle: currentAngle,
+                    endAngle: nextAngle,
+                    life: 1.0, 
+                    // SLOWED DOWN FADE: Dropped from 0.04 to 0.015
+                    // These will now linger for roughly 45-60 frames (~1 second)
+                    decay: 0.012 + Math.random() * 0.015, 
+                    color: color,
+                    rotation: 0,
+                    spin: (Math.random() - 0.5) * 0.05 
+                });
+                
+                currentAngle = nextAngle;
+            }
+        }
+		
+		window.applySkin = function(skinId) {
+			document.body.className = 'skin-' + skinId.toLowerCase();
+		};
+		
+		function detectAndBlockInAppBrowsers() {
+			const ua = navigator.userAgent || navigator.vendor || window.opera;
+			
+			// Looks for Facebook, Instagram, Snapchat, TikTok, Line, etc.
+			const isInApp = (ua.indexOf("FBAN") > -1) || 
+							(ua.indexOf("FBAV") > -1) || 
+							(ua.indexOf("Instagram") > -1) || 
+							(ua.indexOf("Snapchat") > -1) ||
+							(ua.indexOf("Bytedance") > -1) ||
+							(ua.indexOf("Line") > -1);
+
+			if (isInApp) {
+				document.getElementById('webview-jail').style.display = 'block';
+				// Optional: Stop the engine from even running to save battery
+				if (metronome) metronome.terminate(); 
+			}
+		}
+		detectAndBlockInAppBrowsers();
+
+        // --- 1.5 SETTINGS PANEL LOGIC ---
+        function updateGearVisibility() {
+            const gear = document.getElementById('settings-gear');
+            if (networkMode === 'LOCAL' && gameState.status !== 'PLAYING') {
+                gear.classList.add('visible');
+            } else if (networkMode === 'LOCAL' && gameState.status === 'PLAYING') {
+                gear.classList.add('visible'); // Let them tweak mid-local match if they want!
+            } else {
+                gear.classList.remove('visible'); // Hide for guests/hosts during network play
+            }
+
+            // Slide in the Resign button only during active CPU or Online matches
+            const resignBtn = document.getElementById('resign-btn');
+            if ((networkMode === 'CPU' || networkMode === 'HOST' || networkMode === 'GUEST') && gameState.status === 'PLAYING') {
+                resignBtn.classList.add('visible');
+            } else {
+                resignBtn.classList.remove('visible');
+            }
+        }
+		
+		window.handleResign = function(guestResigned = false) {
+            if (gameState.status !== 'PLAYING') return;
+
+            // If we are the guest, tell the host we quit, then let the host's sync state update our screen
+            if (networkMode === 'GUEST') {
+                conn.send({ type: 'ACTION_RESIGN' });
+                return; 
+            }
+
+            gameState.status = 'GAME_OVER';
+            let winnerText = '';
+
+            if (networkMode === 'CPU') {
+                winnerText = cpuConfig.playerNumber === 1 ? 'PLAYER 1 (SILVER) WINS!' : 'PLAYER 2 (DARK) WINS!';
+            } else if (networkMode === 'HOST') {
+                // If guestResigned is true, Guest (P2) gave up. If false, Host (P1) gave up.
+                winnerText = guestResigned ? 'PLAYER 1 (SILVER) WINS!' : 'PLAYER 2 (DARK) WINS!';
+            }
+
+            document.getElementById('win-message').textContent = winnerText + ' (Resignation)';
+            document.getElementById('game-over').style.display = 'block';
+            updateGearVisibility();
+
+            if (networkMode === 'HOST') sendState();
+        };
+
+        window.toggleSettings = function() {
+            const modal = document.getElementById('settings-modal');
+            if (modal.style.display === 'block') {
+                closeSettings();
+            } else {
+                openSettings();
+            }
+        };
+
+        window.toggleMenuPanel = function(e) {
+            const panel = document.getElementById('menu-panel');
+            const isClickInsideReveal = e && e.target.closest('.menu-reveal');
+            const isButton = e && e.target.closest('.ui-btn');
+            
+            if (panel.classList.contains('is-open')) {
+                // If it's open, only close it if we clicked the header, or a button (like "Start CPU Match")
+                if (!isClickInsideReveal || isButton) {
+                    panel.classList.remove('is-open');
+                }
+            } else {
+                // If it's closed, open it and close settings
+                panel.classList.add('is-open');
+                closeSettings();
+            }
+        };
+		
+		document.addEventListener('pointerdown', (e) => {
+			const menuPanel = document.getElementById('menu-panel');
+			
+			// If the menu is open, AND the click happened completely outside of the menu element
+			if (menuPanel.classList.contains('is-open') && !menuPanel.contains(e.target)) {
+				menuPanel.classList.remove('is-open');
+			}
+		});
+		
+		// A helper to merge the preset overrides with your full base JSON
+		function deepMerge(target, source) {
+			for (const key in source) {
+				if (source[key] instanceof Object && key in target) {
+					Object.assign(source[key], deepMerge(target[key], source[key]));
+				}
+			}
+			return { ...target, ...source };
+		}
+
+		window.applyBuiltInPreset = () => {
+            const selector = document.getElementById('preset-selector');
+            const presetKey = selector.value;
+            if (!presetKey || !PHYSICS_PRESETS[presetKey]) return;
+
+            // 1. Grab fresh, untouched copies of ALL defaults
+            let fullBaseConfig = {
+                pieces: JSON.parse(JSON.stringify(DEFAULT_PIECE_CONFIG)),
+                board: JSON.parse(JSON.stringify(DEFAULT_BOARD_CONFIG)),
+                brain: JSON.parse(JSON.stringify(DEFAULT_BRAIN_CONFIG))
+            };
+
+            // 2. Merge the specific preset tweaks onto the fresh defaults
+            let mergedData = deepMerge(fullBaseConfig, PHYSICS_PRESETS[presetKey]);
+
+            // 3. Inject directly into the STAGING drafts (Just like your file importer does!)
+            if (mergedData.board) STAGING_BOARD = { ...STAGING_BOARD, ...mergedData.board };
+            if (mergedData.brain) STAGING_BRAIN = { ...STAGING_BRAIN, ...mergedData.brain };
+            if (mergedData.pieces) {
+                for (let p in mergedData.pieces) {
+                    if (STAGING_PIECES[p]) {
+                        STAGING_PIECES[p] = { ...STAGING_PIECES[p], ...mergedData.pieces[p] };
+                        // Re-attach the Path2D so the renderer doesn't crash!
+                        STAGING_PIECES[p].path2D = new Path2D(STAGING_PIECES[p].svgPath);
+                    }
+                }
+            }
+
+            // 4. Update the UI to reflect the new staging data
+            if (typeof cpuConfig !== 'undefined') {
+                document.getElementById('cpu-difficulty').value = 'Custom';
+                cpuConfig.difficulty = 'Custom';
+            }
+            
+            loadConfigForm(); // This forces the sliders to visually update to the new preset!
+            
+            // 5. Reset the dropdown text so it doesn't get stuck
+            setTimeout(() => { selector.value = ""; }, 500);
+        };
+
+		window.openSettings = function() {
+			// 1. Create isolated "Draft" copies of all our live configurations
+			STAGING_PIECES = JSON.parse(JSON.stringify(PIECE_CONFIG));
+			STAGING_BOARD = JSON.parse(JSON.stringify(BOARD_CONFIG));
+			STAGING_BRAIN = JSON.parse(JSON.stringify(CUSTOM_BRAIN));
+
+			// Re-attach Path2D objects because JSON.stringify strips them!
+			Object.keys(STAGING_PIECES).forEach(key => STAGING_PIECES[key].path2D = PIECE_CONFIG[key].path2D);
+
+			document.getElementById('settings-modal').style.display = 'block';
+			document.getElementById('menu-panel').classList.remove('is-open'); 
+			
+			currentEditingPiece = document.getElementById('config-piece').value;
+			loadConfigForm();
+		};
+
+		window.closeSettings = function() {
+			document.getElementById('settings-modal').style.display = 'none';
+			// By doing nothing else, we discard the STAGING drafts safely!
+		};
+
+		// --- NEW: Saves the current DOM inputs to the Draft objects before navigating away ---
+		window.saveCurrentToStaging = function() {
+			if (!STAGING_PIECES) return; 
+			const p = currentEditingPiece; 
+			
+			STAGING_PIECES[p].mass = Math.max(0.1, parseFloat(document.getElementById('val-mass').value) || 0.1);
+			STAGING_PIECES[p].frictionAir = Math.max(0, parseFloat(document.getElementById('val-fric').value) || 0);
+			STAGING_PIECES[p].restitution = Math.max(0, parseFloat(document.getElementById('val-rest').value) || 0);
+			STAGING_PIECES[p].radius = Math.max(2, parseFloat(document.getElementById('val-rad').value) || 2);
+			STAGING_PIECES[p].maxDrag = Math.max(1, parseFloat(document.getElementById('val-drag').value) || 1);
+			STAGING_PIECES[p].maxSturdiness = Math.max(1, parseFloat(document.getElementById('val-hp').value) || 1);
+			STAGING_PIECES[p].maxHop = Math.max(0, parseFloat(document.getElementById('val-hop').value) || 0);
+			
+			STAGING_BRAIN.breadth = Math.max(1, parseInt(document.getElementById('val-ai-breadth').value) || 1);
+			STAGING_BRAIN.ticks = Math.max(1, parseInt(document.getElementById('val-ai-ticks').value) || 1);
+			STAGING_BRAIN.bloodthirst = parseFloat(document.getElementById('val-ai-blood').value) || 0;
+			STAGING_BRAIN.assassin = parseFloat(document.getElementById('val-ai-assassin').value) || 0;
+			STAGING_BRAIN.lossAversion = Math.max(0, parseFloat(document.getElementById('val-ai-loss').value) || 0);
+			STAGING_BRAIN.cowardice = parseFloat(document.getElementById('val-ai-flee').value) || 0;
+			
+			STAGING_BOARD.wallEnabled = document.getElementById('conf-wall-enable').checked;
+			STAGING_BOARD.wallRestitution = Math.max(0, parseFloat(document.getElementById('val-wall-rest').value) || 0);
+			STAGING_BOARD.skin = document.getElementById('conf-skin').value;
+		};
+
+		// --- NEW: Handles dropdown changes safely ---
+		window.handlePieceSelectChange = function() {
+			saveCurrentToStaging(); // Save the piece we were JUST looking at
+			currentEditingPiece = document.getElementById('config-piece').value; // Update our tracker
+			loadConfigForm(); // Load the new piece
+		};
+
+		window.cyclePiece = function(direction) {
+			saveCurrentToStaging(); // Save current edits to draft!
+			
+			const select = document.getElementById('config-piece');
+			const totalOptions = select.options.length;
+			const newIndex = (select.selectedIndex + direction + totalOptions) % totalOptions;
+			
+			select.selectedIndex = newIndex;
+			currentEditingPiece = select.value; // Update tracker
+			loadConfigForm(); 
+		};
+
+		window.loadConfigForm = function() {
+			if (!STAGING_PIECES) return;
+			const p = currentEditingPiece;
+			const conf = STAGING_PIECES[p]; // PULL FROM STAGING, NOT LIVE
+			
+			document.getElementById('conf-wall-enable').checked = STAGING_BOARD.wallEnabled;
+			document.getElementById('conf-wall-rest').value = STAGING_BOARD.wallRestitution;
+			document.getElementById('val-wall-rest').value = STAGING_BOARD.wallRestitution;
+			document.getElementById('conf-skin').value = STAGING_BOARD.skin || 'Classic';
+			toggleWallSlider();
+			
+			document.getElementById('conf-mass').value = conf.mass; document.getElementById('val-mass').value = conf.mass;
+			document.getElementById('conf-fric').value = conf.frictionAir; document.getElementById('val-fric').value = conf.frictionAir;
+			document.getElementById('conf-rest').value = conf.restitution; document.getElementById('val-rest').value = conf.restitution;
+			document.getElementById('conf-rad').value = conf.radius; document.getElementById('val-rad').value = conf.radius;
+			document.getElementById('conf-drag').value = conf.maxDrag; document.getElementById('val-drag').value = conf.maxDrag;
+			document.getElementById('conf-hp').value = conf.maxSturdiness; document.getElementById('val-hp').value = conf.maxSturdiness;
+			document.getElementById('conf-hop').value = conf.maxHop; document.getElementById('val-hop').value = conf.maxHop;
+
+			document.getElementById('ai-breadth').value = STAGING_BRAIN.breadth; document.getElementById('val-ai-breadth').value = STAGING_BRAIN.breadth;
+			document.getElementById('ai-ticks').value = STAGING_BRAIN.ticks; document.getElementById('val-ai-ticks').value = STAGING_BRAIN.ticks;
+			document.getElementById('ai-blood').value = STAGING_BRAIN.bloodthirst; document.getElementById('val-ai-blood').value = STAGING_BRAIN.bloodthirst;
+			document.getElementById('ai-assassin').value = STAGING_BRAIN.assassin; document.getElementById('val-ai-assassin').value = STAGING_BRAIN.assassin;
+			document.getElementById('ai-loss').value = STAGING_BRAIN.lossAversion; document.getElementById('val-ai-loss').value = STAGING_BRAIN.lossAversion;
+			document.getElementById('ai-flee').value = STAGING_BRAIN.cowardice; document.getElementById('val-ai-flee').value = STAGING_BRAIN.cowardice;
+		};
+
+		window.saveConfig = function() {
+			// 1. Make sure the absolute latest DOM values are saved to staging
+			saveCurrentToStaging();
+
+			// 2. COMMIT STAGING TO LIVE!
+			PIECE_CONFIG = JSON.parse(JSON.stringify(STAGING_PIECES));
+			BOARD_CONFIG = JSON.parse(JSON.stringify(STAGING_BOARD));
+			CUSTOM_BRAIN = JSON.parse(JSON.stringify(STAGING_BRAIN));
+
+			// 3. Restore Path2D objects
+			Object.keys(PIECE_CONFIG).forEach(key => PIECE_CONFIG[key].path2D = STAGING_PIECES[key].path2D);
+			
+			// 4. Apply visual skin immediately
+			window.applySkin(BOARD_CONFIG.skin);
+			
+			closeSettings();
+			
+			if (networkMode === 'HOST' && conn) {
+				const safeConfig = JSON.parse(JSON.stringify(PIECE_CONFIG));
+				conn.send({ type: 'CONFIG_SYNC', config: safeConfig, board: BOARD_CONFIG, challenge: currentChallenge });
+			}
+			
+			resetGame(); 
+		};
+
+		window.exportConfig = function() {
+			saveCurrentToStaging(); // Export their current DRAFTS, not the live game!
+
+			const exportData = { pieces: {}, board: STAGING_BOARD, brain: STAGING_BRAIN };
+			
+			for (let p in STAGING_PIECES) {
+				exportData.pieces[p] = { ...STAGING_PIECES[p] };
+				delete exportData.pieces[p].path2D; // Strip un-serializable canvas objects
+			}
+			
+			const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a'); a.href = url; a.download = 'shess_tuning.json';
+			document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+		};
+
+		window.handleConfigLoad = function(event) {
+			const file = event.target.files[0];
+			if (!file) return;
+			
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				try {
+					const loadedData = JSON.parse(e.target.result);
+					
+					// IMPORT INTO DRAFTS, so the user can still hit "Cancel" if they change their mind!
+					if (loadedData.board) STAGING_BOARD = { ...STAGING_BOARD, ...loadedData.board };
+					if (loadedData.brain) STAGING_BRAIN = { ...STAGING_BRAIN, ...loadedData.brain };
+					
+					if (loadedData.pieces) {
+						for (let p in loadedData.pieces) {
+							if (STAGING_PIECES[p]) {
+								STAGING_PIECES[p] = { ...STAGING_PIECES[p], ...loadedData.pieces[p] };
+								STAGING_PIECES[p].path2D = new Path2D(STAGING_PIECES[p].svgPath);
+							}
+						}
+					}
+					
+					document.getElementById('cpu-difficulty').value = 'Custom';
+					cpuConfig.difficulty = 'Custom';
+					
+					loadConfigForm(); 
+					alert("Tuning imported successfully! Review the sliders, then click 'Apply & Restart'.");
+				} catch (err) {
+					alert("Failed to load tuning. Invalid JSON file.");
+					console.error(err);
+				}
+				event.target.value = '';
+			};
+			reader.readAsText(file);
+		};
+
+        window.switchSettingsTab = function(tab) {
+            document.getElementById('settings-physics').style.display = tab === 'physics' ? 'block' : 'none';
+            document.getElementById('settings-cpu').style.display = tab === 'cpu' ? 'block' : 'none';
+            document.getElementById('tab-physics').className = tab === 'physics' ? 'ui-btn full-width active-tab' : 'ui-btn full-width inactive-tab';
+            document.getElementById('tab-cpu').className = tab === 'cpu' ? 'ui-btn full-width active-tab' : 'ui-btn full-width inactive-tab';
+        };
+		
+		window.toggleWallSlider = function() {
+            document.getElementById('wall-rest-row').style.display = document.getElementById('conf-wall-enable').checked ? 'flex' : 'none';
+        };
+
+        // Two-way data binding: moving the slider updates the box, typing in the box moves the slider
+        ['mass', 'fric', 'rest', 'rad', 'drag', 'hp', 'hop'].forEach(id => {
+            document.getElementById('conf-'+id).addEventListener('input', function() { document.getElementById('val-'+id).value = this.value; });
+            document.getElementById('val-'+id).addEventListener('input', function() { document.getElementById('conf-'+id).value = this.value; });
+        });
+        ['breadth', 'ticks', 'blood', 'assassin', 'loss', 'flee'].forEach(id => {
+            document.getElementById('ai-'+id).addEventListener('input', function() { document.getElementById('val-ai-'+id).value = this.value; });
+            document.getElementById('val-ai-'+id).addEventListener('input', function() { document.getElementById('ai-'+id).value = this.value; });
+        });
+		
+		// Add this one line below your existing two-way binding arrays:
+        document.getElementById('conf-wall-rest').addEventListener('input', function() { document.getElementById('val-wall-rest').value = this.value; });
+        document.getElementById('val-wall-rest').addEventListener('input', function() { document.getElementById('conf-wall-rest').value = this.value; });
+
+        // --- 2. GAME STATE & NETWORKING ---
+        let gameState = {
+            status: 'PLAYING', turn: 1, activePiece: null, dragStart: null, mousePos: { x: 0, y: 0 },
+            capturedByP1: [], capturedByP2: [], promotingPiece: null, opponentAim: null 
+        };
+
+        let cpuConfig = { enabled: false, playerNumber: 2, difficulty: 'Skilled', isThinking: false };
+		
+		// --- DRAFT CONFIGURATIONS ---
+		let STAGING_PIECES = null;
+		let STAGING_BOARD = null;
+		let STAGING_BRAIN = null;
+		let currentEditingPiece = 'King'; // Keeps track of what is currently on the screen
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        const peer = new Peer(generateRoomCode(), {
+            config: {
+                'iceServers': [
+                    // Primary: Try to connect for free via Google STUN
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    
+                    // Fallback: If trapped behind a Symmetric NAT, use the relay
+                    {
+						urls: "turn:global.relay.metered.ca:80",
+						username: "e06d2442d26bb95c172d2b18",
+						credential: "4WudM/Ql9M96dEF0",
+					},
+					{
+						urls: "turn:global.relay.metered.ca:80?transport=tcp",
+						username: "e06d2442d26bb95c172d2b18",
+						credential: "4WudM/Ql9M96dEF0",
+					},
+					{
+						urls: "turn:global.relay.metered.ca:443",
+						username: "e06d2442d26bb95c172d2b18",
+						credential: "4WudM/Ql9M96dEF0",
+					},
+					{
+						urls: "turns:global.relay.metered.ca:443?transport=tcp",
+						username: "e06d2442d26bb95c172d2b18",
+						credential: "4WudM/Ql9M96dEF0",
+					}
+                ]
+            }
+        });
+		
+        let conn = null;
+        let networkMode = 'LOCAL'; 
+        let myPlayerNumber = 1; 
+        let rematchVotes = { 1: false, 2: false };
+        let globalPieceIdCounter = 0;
+		
+		window.safeNetSend = function(payload) {
+			if (conn && conn.open) {
+				try { 
+					conn.send(payload); 
+				} catch(err) { 
+					console.warn("Dropped packet (Network unstable):", err); 
+				}
+			}
+		};
+
+        peer.on('open', (id) => {
+            const idElem = document.getElementById('my-peer-id');
+            idElem.textContent = id;
+            idElem.onclick = async () => {
+                try {
+                    await navigator.clipboard.writeText(id);
+                    idElem.textContent = 'COPIED!';
+                    idElem.style.color = '#FFF';
+                    setTimeout(() => {
+                        if(idElem.textContent === 'COPIED!') {
+                            idElem.textContent = id;
+                            idElem.style.color = '#4CAF50';
+                        }
+                    }, 1500);
+                } catch (err) { console.error('Failed to copy text: ', err); }
+            };
+        });
+		
+		peer.on('error', (err) => {
+			console.error('PeerJS Network Error:', err.type, err);
+			
+			// Force the UI out of the "Connecting..." purgatory
+			const statusText = document.getElementById('network-status');
+			if (statusText) {
+				statusText.textContent = 'Status: Connection Failed';
+				statusText.style.color = '#ff5252'; // Turn text red
+				statusText.style.fontWeight = 'bold';
+			}
+			
+			unlockMenuUI();
+			window.handleQuit(true); // Force a local reset
+		});
+
+        // ==========================================
+        // --- UI LOCKDOWN FUNCTIONS ---
+        // ==========================================
+        function lockMenuUI(isHost) {
+            // 1. Force the menu open
+            document.getElementById('menu-panel').classList.add('is-open');
+
+            // 2. Update the Status Text and make it pop
+            const statusText = document.getElementById('network-status');
+            if (statusText) {
+                statusText.textContent = isHost ? 'Status: Opponent Joined!' : 'Status: Connected to Host!';
+                statusText.style.color = '#00FF00'; // Bright green
+                statusText.style.fontWeight = 'bold';
+            }
+
+            // 3. Disable all pre-game settings to lock the state
+            document.getElementById('challenge-select').disabled = true;
+            document.getElementById('cpu-color').disabled = true;
+            document.getElementById('cpu-difficulty').disabled = true;
+            
+            const cpuBtn = document.querySelector('button[onclick="startCPUMatch()"]');
+            if (cpuBtn) cpuBtn.disabled = true;
+
+            document.getElementById('friend-id-input').disabled = true;
+            
+            const joinBtn = document.querySelector('button[onclick="connectToPeer()"]');
+            if (joinBtn) {
+                joinBtn.disabled = true;
+                if (!isHost) joinBtn.textContent = 'Connected';
+            }
+        }
+
+        function unlockMenuUI() {
+            // 1. Reset Status Text
+            const statusText = document.getElementById('network-status');
+            if (statusText) {
+                statusText.style.color = ''; // Reset to default CSS color
+                statusText.style.fontWeight = 'normal';
+            }
+
+            // 2. Re-enable all pre-game settings
+            document.getElementById('challenge-select').disabled = false;
+            document.getElementById('cpu-color').disabled = false;
+            document.getElementById('cpu-difficulty').disabled = false;
+            
+            const cpuBtn = document.querySelector('button[onclick="startCPUMatch()"]');
+            if (cpuBtn) cpuBtn.disabled = false;
+
+            document.getElementById('friend-id-input').disabled = false;
+            
+            const joinBtn = document.querySelector('button[onclick="connectToPeer()"]');
+            if (joinBtn) {
+                joinBtn.disabled = false;
+                joinBtn.textContent = 'Join';
+            }
+        }
+
+        peer.on('connection', (connection) => {
+			// If a new connection comes in while we are already hosting, 
+			// assume the old guest ghosted/crashed. Kick the dead connection and accept the new one!
+			if (networkMode === 'HOST' || networkMode === 'GUEST') {
+				if (conn && conn.open) {
+					conn.close(); 
+				}
+			}
+			
+			conn = connection;
+			networkMode = 'HOST'; myPlayerNumber = 1; cpuConfig.enabled = false;
+			document.getElementById('challenge-select').value = 'Standard';
+			setupConnection();
+		});
+
+        window.connectToPeer = () => {
+            const id = document.getElementById('friend-id-input').value.trim().toUpperCase();
+            if(!id) return;
+            document.getElementById('network-status').textContent = 'Status: Connecting...';
+            document.getElementById('challenge-select').value = 'Standard';
+            
+            networkMode = 'GUEST'; myPlayerNumber = 2; cpuConfig.enabled = false;
+            
+            conn = peer.connect(id); 
+            setupConnection();
+        };
+
+        window.handleChallengeChange = () => {
+            if (networkMode === 'GUEST') return; // Guests cannot dictate the board setup
+            
+            currentChallenge = document.getElementById('challenge-select').value;
+            resetGame(); // Immediately update the local board!
+            
+            // If the host changes the mode while someone is connected, sync it to them immediately
+            if (networkMode === 'HOST' && conn) {
+                const safeConfig = JSON.parse(JSON.stringify(PIECE_CONFIG));
+                conn.send({ type: 'CONFIG_SYNC', config: safeConfig, challenge: currentChallenge });
+            }
+        };
+		
+		/* ADVANCED HUD */
+		let advancedHudEnabled = false;
+		let hoverPos = { x: 0, y: 0 };
+		let isTooltipOpen = false; // Tracks if the tooltip is currently faded in
+
+		function toggleAdvancedHUD() {
+			advancedHudEnabled = document.getElementById('advanced-hud-toggle').checked;
+			if (!advancedHudEnabled) {
+				document.getElementById('physics-tooltip').classList.remove('is-visible');
+				isTooltipOpen = false;
+			}
+		}
+
+		function updateTooltip() {
+			if (!advancedHudEnabled) return;
+			const tooltip = document.getElementById('physics-tooltip');
+			
+			// Hide tooltip during active aiming/dragging OR if the game isn't in play
+			if (gameState.activePiece || gameState.status !== 'PLAYING') {
+				tooltip.classList.remove('is-visible');
+				isTooltipOpen = false;
+				return;
+			}
+			
+			const canvas = document.querySelector('canvas'); 
+			if (!canvas) return;
+
+			const rect = canvas.getBoundingClientRect();
+			const scaleX = canvas.width / rect.width;
+			const scaleY = canvas.height / rect.height;
+			
+			// Using our new hoverPos tracker!
+			const worldX = (hoverPos.x - rect.left) * scaleX;
+			const worldY = (hoverPos.y - rect.top) * scaleY;
+
+			const bodies = Matter.Composite.allBodies(engine.world).filter(b => b.gameData && b.gameData.type !== 'Wall');
+			const hoveredBodies = Matter.Query.point(bodies, { x: worldX, y: worldY });
+
+			if (hoveredBodies.length > 0) {
+				const body = hoveredBodies[0];
+				
+				// Follow the cursor
+				let ttX = hoverPos.x + 15;
+				let ttY = hoverPos.y + 15;
+				if (ttX + 150 > window.innerWidth) ttX = hoverPos.x - 150;
+				if (ttY + 110 > window.innerHeight) ttY = hoverPos.y - 110;
+				tooltip.style.left = ttX + 'px';
+				tooltip.style.top = ttY + 'px';
+
+				if (!isTooltipOpen) {
+					document.getElementById('tt-name').textContent = body.gameData.type.toUpperCase();
+					
+					// Slam all bars back to 0% instantly with NO animation
+					document.getElementById('tt-mass').style.width = '0%';
+					document.getElementById('tt-frict').style.width = '0%';
+					document.getElementById('tt-bounce').style.width = '0%';
+					document.getElementById('tt-sturd').style.width = '0%';
+					
+					tooltip.classList.add('is-visible');
+					isTooltipOpen = true;
+					
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							populateTooltipData(body);
+						});
+					});
+				} else {
+					populateTooltipData(body);
+				}
+			} else {
+				tooltip.classList.remove('is-visible');
+				isTooltipOpen = false;
+			}
+		}
+
+		function populateTooltipData(body) {
+			if (!body.gameData) return;
+			
+			// Set Piece Name (e.g., "KNIGHT")
+			document.getElementById('tt-name').textContent = body.gameData.type.toUpperCase();
+			
+			// --- NORMALIZE VALUES BASED ON EXACT CONFIG RANGES ---
+			// Clamping the values first ensures that if a physics glitch pushes 
+			// a stat slightly out of bounds, the UI bar doesn't overflow or break.
+			
+			// Mass: min = 5, max = 400
+			const massVal = Math.max(5, Math.min(400, body.mass));
+			const massPct = ((massVal - 5) / (400 - 5)) * 100;
+			
+			// Friction (Grip): min = 0, max = 0.5
+			const fricVal = Math.max(0, Math.min(0.5, body.frictionAir));
+			const frictionPct = (fricVal / 0.5) * 100;
+			
+			// Bounciness (Restitution): min = 0, max = 1.5
+			const restVal = Math.max(0, Math.min(1.5, body.restitution));
+			const bouncePct = (restVal / 1.5) * 100;
+			
+			// Armor (Sturdiness): min = 10, max = 2000
+			const sturdVal = Math.max(10, Math.min(2000, body.gameData.sturdiness || 10));
+			const sturdPct = ((sturdVal - 10) / (2000 - 10)) * 100;
+
+			// Apply calculated percentages to the HTML graphical bars
+			document.getElementById('tt-mass').style.width = massPct + '%';
+			document.getElementById('tt-frict').style.width = frictionPct + '%';
+			document.getElementById('tt-bounce').style.width = bouncePct + '%';
+			document.getElementById('tt-sturd').style.width = sturdPct + '%';
+		}
+		// --------------------------------------------------------------------
+
+        window.startCPUMatch = () => {
+            if (conn) { conn.close(); conn = null; }
+            networkMode = 'CPU';
+            cpuConfig.enabled = true;
+            cpuConfig.playerNumber = parseInt(document.getElementById('cpu-color').value);
+            myPlayerNumber = cpuConfig.playerNumber === 1 ? 2 : 1;
+            cpuConfig.difficulty = document.getElementById('cpu-difficulty').value;
+            
+            // Notice we removed the "currentChallenge =" line here because the dropdown already handled it!
+            
+            document.getElementById('network-status').textContent = `Status: VS CPU (${cpuConfig.difficulty})`;
+            document.getElementById('menu-panel').classList.remove('is-open');
+            resetGame();
+        };
+
+        function setupConnection() {
+            const initNetworkPlay = () => {
+                if (networkMode === 'GUEST') {
+                    // Tell the host our data channel is fully open and ready to receive!
+                    lockMenuUI(false); // Lock the guest's UI
+                    conn.send({ type: 'GUEST_READY' });
+                } else if (networkMode === 'HOST') {
+                    lockMenuUI(true); // Lock the host's UI
+                }
+            };
+
+            // THE BULLETPROOF FIX: Check if the data channel is already open.
+            // If it is, execute immediately. If not, wait for the event.
+            if (conn.open) {
+                initNetworkPlay();
+            } else {
+                conn.on('open', initNetworkPlay);
+            }
+
+            conn.on('data', (data) => handleNetworkData(data));
+            conn.on('close', () => window.handleQuit(true));
+        }
+
+        function handleNetworkData(data) {
+			if (networkMode === 'LOCAL') return; // Incase network traffic comes in after game ends.
+            if (data.type === 'GUEST_READY' && networkMode === 'HOST') {
+                const safeConfig = JSON.parse(JSON.stringify(PIECE_CONFIG));
+                conn.send({ type: 'CONFIG_SYNC', config: safeConfig, board: BOARD_CONFIG, challenge: currentChallenge });
+                resetGame();
+            } else if (data.type === 'SYNC' && networkMode === 'GUEST') {
+                // NEW: Ignore physics updates while the board is animating! Let it finish sliding!
+                if (gameState.status !== 'TRANSITIONING') {
+                    applySyncState(data.state);
+                }
+            } else if (data.type === 'CONFIG_SYNC' && networkMode === 'GUEST') {
+                PIECE_CONFIG = data.config;
+                if (data.board) {
+					BOARD_CONFIG = data.board;
+					window.applySkin(BOARD_CONFIG.skin); // Instantly update the guest's background!
+				}
+                currentChallenge = data.challenge || 'Standard'; 
+                document.getElementById('challenge-select').value = currentChallenge; 
+                
+                Object.keys(PIECE_CONFIG).forEach(key => PIECE_CONFIG[key].path2D = new Path2D(PIECE_CONFIG[key].svgPath));
+                
+                // NEW: Guest must trigger a board reset to apply the synced layout and animations!
+                resetGame(true);
+            } else if (data.type === 'ACTION_AIM') {
+                if (data.pieceId === null) gameState.opponentAim = null;
+                else gameState.opponentAim = { pieceId: data.pieceId, mousePos: data.mousePos };
+            } else if (data.type === 'ACTION_FLICK' && networkMode === 'HOST') {
+                const body = Composite.allBodies(engine.world).find(b => b.gameData.id === data.bodyId);
+                if (body && gameState.turn === 2) {
+                    executeFlick(body, data.force, data.isKnight, data.hopDist);
+                }
+            } else if (data.type === 'ACTION_PROMOTE' && networkMode === 'HOST') {
+                window.handlePromotionSelection(data.newType, true);
+            } else if (data.type === 'REMATCH_VOTE') {
+                rematchVotes[data.player] = true; checkRematch();
+            } else if (data.type === 'RESTART' && networkMode === 'GUEST') {
+                resetGame(true);
+            } else if (data.type === 'QUIT') {
+                window.handleQuit(true);
+            } else if (data.type === 'ACTION_RESIGN' && networkMode === 'HOST') {
+                window.handleResign(true);
+			}
+        }
+
+        function sendState() {
+			if (!conn || networkMode !== 'HOST') return;
+			
+			const formatFloat = (val) => Math.round(val * 100) / 100;
+
+			const bodies = Composite.allBodies(engine.world)
+			.filter(b => b.gameData && b.gameData.type !== 'Wall')
+			.map(b => ({
+				id: b.gameData.id, 
+				x: formatFloat(b.position.x), 
+				y: formatFloat(b.position.y), 
+				a: formatFloat(b.angle),
+				h: b.gameData.isHopping ? 1 : 0, 
+				type: b.gameData.type, 
+				p: b.gameData.player, 
+				thd: formatFloat(b.gameData.targetHopDistance),
+				s: Math.round(b.gameData.sturdiness) 
+			}));
+			
+			window.safeNetSend({ // <-- Updated
+				type: 'SYNC',
+				state: {
+					status: gameState.status, turn: gameState.turn, cap1: gameState.capturedByP1, cap2: gameState.capturedByP2,
+					promoId: gameState.promotingPiece ? gameState.promotingPiece.gameData.id : null, bodies: bodies, winner: document.getElementById('win-message').textContent
+				}
+			});
+		}
+
+        function applySyncState(state) {
+            gameState.status = state.status; gameState.turn = state.turn;
+            gameState.capturedByP1 = state.cap1; gameState.capturedByP2 = state.cap2;
+            updateCapturedUI(); updateTurnIndicator();
+
+            if (state.status === 'GAME_OVER') {
+                document.getElementById('win-message').textContent = state.winner;
+                document.getElementById('game-over').style.display = 'block';
+                updateGearVisibility(); 
+            } else {
+                document.getElementById('game-over').style.display = 'none';
+            }
+
+            const currentBodies = Composite.allBodies(engine.world);
+            state.bodies.forEach(sBody => {
+                let localBody = currentBodies.find(b => b.gameData.id === sBody.id);
+                if (!localBody || localBody.gameData.type !== sBody.type) {
+                    if (localBody) Composite.remove(engine.world, localBody);
+                    localBody = createPiece(sBody.x, sBody.y, sBody.type, sBody.p, sBody.id, sBody.s);
+                    Composite.add(engine.world, localBody);
+                }
+                localBody.gameData.targetX = sBody.x;
+                localBody.gameData.targetY = sBody.y;
+                localBody.gameData.targetA = sBody.a;
+                
+                // We still update these instantly because they don't affect visual sliding
+                localBody.gameData.isHopping = sBody.h; 
+                localBody.gameData.targetHopDistance = sBody.thd;
+                localBody.gameData.sturdiness = sBody.s; 
+                localBody.collisionFilter.mask = sBody.h ? 0x0000 : 0xFFFFFFFF;
+                localBody.isSensor = true;
+            });
+
+            // Inside applySyncState(state), update the final cleanup loop:
+			currentBodies.forEach(b => {
+				if (b.gameData && b.gameData.type === 'Wall') return; // Protect local walls!
+				if (!state.bodies.find(sb => sb.id === b.gameData.id)) Composite.remove(engine.world, b);
+			});
+
+            if (state.status === 'PROMOTING' && state.promoId !== null) {
+                const promoBody = Composite.allBodies(engine.world).find(b => b.gameData.id === state.promoId);
+                if (promoBody) {
+                    gameState.promotingPiece = promoBody;
+                    if (promoBody.gameData.player === myPlayerNumber) showPromotionMenu(promoBody);
+                }
+            } else {
+                document.getElementById('promotion-menu').style.display = 'none';
+            }
+        }
+		
+		// --- NEW: WebRTC Zombie Connection Cleanup ---
+		window.addEventListener('beforeunload', () => {
+			if (conn) {
+				conn.close();
+			}
+			if (peer) {
+				peer.destroy(); // THIS explicitly frees up the TURN server ports!
+			}
+		});
+
+        // --- 3. AUDIO ENGINE ---
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playClack(volume, panValue) {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc1 = this.ctx.createOscillator(), gain1 = this.ctx.createGain();
+                const osc2 = this.ctx.createOscillator(), gain2 = this.ctx.createGain();
+                const panner = this.ctx.createStereoPanner(), filter = this.ctx.createBiquadFilter();
+
+                filter.type = 'lowpass'; filter.frequency.setValueAtTime(2500, t); filter.frequency.exponentialRampToValueAtTime(500, t + 0.05);
+                osc1.type = 'sine'; osc1.frequency.setValueAtTime(400, t); osc1.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+                gain1.gain.setValueAtTime(0, t); gain1.gain.linearRampToValueAtTime(volume * 0.8, t + 0.002); gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                osc2.type = 'square'; osc2.frequency.setValueAtTime(1500, t); osc2.frequency.exponentialRampToValueAtTime(200, t + 0.02); 
+                gain2.gain.setValueAtTime(0, t); gain2.gain.linearRampToValueAtTime(volume * 0.4, t + 0.001); gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.015); 
+                panner.pan.value = Math.max(-1, Math.min(1, panValue));
+                
+                osc1.connect(gain1); osc2.connect(gain2); gain1.connect(filter); gain2.connect(filter); filter.connect(panner); panner.connect(this.ctx.destination);
+                osc1.start(t); osc1.stop(t + 0.06); osc2.start(t); osc2.stop(t + 0.02);
+            },
+            playFlick(panValue) {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain(), panner = this.ctx.createStereoPanner();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                panner.pan.value = Math.max(-1, Math.min(1, panValue));
+                osc.connect(gain); gain.connect(panner); panner.connect(this.ctx.destination);
+                osc.start(t); osc.stop(t + 0.16);
+            },
+            playThud(volume, panValue) {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const panner = this.ctx.createStereoPanner();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(120, t);
+                osc.frequency.exponentialRampToValueAtTime(20, t + 0.15); // Quick pitch drop for heavy impact
+
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(volume * 1.5, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+                panner.pan.value = Math.max(-1, Math.min(1, panValue));
+
+                osc.connect(gain); gain.connect(panner); panner.connect(this.ctx.destination);
+                osc.start(t); osc.stop(t + 0.25);
+            },
+            playShatter(volume, panValue) {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const panner = this.ctx.createStereoPanner();
+                panner.pan.value = Math.max(-1, Math.min(1, panValue));
+                panner.connect(this.ctx.destination);
+
+                // 1. The initial "CRACK" (Filtered Noise)
+                const bufferSize = this.ctx.sampleRate * 0.15; // 150ms of noise
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1; // Generate white noise
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const noiseFilter = this.ctx.createBiquadFilter();
+                noiseFilter.type = 'highpass';
+                noiseFilter.frequency.value = 1200; // Cut the low rumble for a brittle sound
+                
+                const noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(volume * 1.2, t);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15); // Fast crunch
+                
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(panner);
+                noise.start(t);
+
+                // 2. The "Tinkling Shards" (High pitched, static sine/triangle waves)
+                const numShards = 5;
+                for (let i = 0; i < numShards; i++) {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    // Mix of sine and triangle for that ceramic glass feel
+                    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                    
+                    // High, random frequencies for ceramic shards
+                    const freq = 1500 + Math.random() * 4000;
+                    osc.frequency.setValueAtTime(freq, t);
+                    
+                    // Shards hit at slightly different times
+                    const delay = Math.random() * 0.05; 
+                    const shardVol = volume * (0.2 + Math.random() * 0.3);
+                    
+                    gain.gain.setValueAtTime(0, t);
+                    gain.gain.setValueAtTime(shardVol, t + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.15 + Math.random() * 0.15);
+
+                    osc.connect(gain);
+                    gain.connect(panner);
+                    osc.start(t);
+                    osc.stop(t + delay + 0.4);
+                }
+            }
+        };
+
+        // --- 4. ENGINE & BOARD SETUP ---
+        const engine = Engine.create(); engine.world.gravity.y = 0; engine.world.gravity.x = 0;
+        const render = Render.create({ element: document.getElementById('game-container'), engine: engine, options: { width: CANVAS_SIZE, height: CANVAS_SIZE, wireframes: false, background: '#0a0a0a' } });
+
+        function createPiece(x, y, type, player, forcedId = null, forcedSturdiness = null) {
+            const config = PIECE_CONFIG[type];
+            const piece = Bodies.circle(x, y, config.radius, {
+                frictionAir: config.frictionAir, restitution: config.restitution, friction: 0.1, collisionFilter: { category: 0x0001, mask: 0xFFFFFFFF },
+                render: { fillStyle: player === 1 ? P1_COLOR : P2_COLOR, strokeStyle: player === 1 ? '#FFF' : '#555', lineWidth: 2 }
+            });
+            Body.setMass(piece, config.mass);
+
+            // Procedurally generate the fracture lines for this specific piece
+            const fractures = [];
+            const numCracks = 6; 
+            for (let i = 0; i < numCracks; i++) {
+                let crack = [];
+                let startAngle = (i / numCracks) * Math.PI * 2 + (Math.random() - 0.5); 
+                let currentR = config.radius; 
+                crack.push({ x: Math.cos(startAngle) * currentR, y: Math.sin(startAngle) * currentR });
+                
+                let segments = 3 + Math.floor(Math.random() * 3);
+                let prevAngle = startAngle;
+                for (let j = 0; j < segments; j++) {
+                    currentR -= (config.radius / segments) * (0.8 + Math.random() * 0.5); 
+                    if (currentR < -config.radius * 0.3) break; 
+                    prevAngle += (Math.random() - 0.5) * 1.2; 
+                    crack.push({ x: Math.cos(prevAngle) * currentR, y: Math.sin(prevAngle) * currentR });
+                }
+                fractures.push(crack);
+            }
+
+            // --- THE FIX: Smart ID synchronization ---
+            let assignedId;
+            if (forcedId !== null) {
+                assignedId = forcedId;
+                // Force the global counter to stay ahead of any synced network IDs
+                if (assignedId >= globalPieceIdCounter) {
+                    globalPieceIdCounter = assignedId + 1; 
+                }
+            } else {
+                assignedId = globalPieceIdCounter++;
+            }
+            // -----------------------------------------
+
+            piece.gameData = { 
+                player: player, type: type, radius: config.radius, maxDrag: config.maxDrag, path2D: config.path2D, maxHop: config.maxHop,
+                isHopping: false, hopStartPos: null, targetHopDistance: 0, 
+                maxSturdiness: config.maxSturdiness, sturdiness: forcedSturdiness !== null ? forcedSturdiness : config.maxSturdiness,
+                fractures: fractures,
+                id: assignedId // Use our safely calculated ID
+            };
+            return piece;
+        }
+
+        function buildWall() {
+			// 1. Clear any existing walls from the physics world
+			const existingWalls = Composite.allBodies(engine.world).filter(b => b.gameData && b.gameData.isWall);
+			if (existingWalls.length > 0) {
+				Composite.remove(engine.world, existingWalls);
+			}
+			
+			wallBodies = [];
+
+			// 2. Build the new wall if enabled
+			if (BOARD_CONFIG.wallEnabled) {
+				const numSegments = 64;
+				const wallThickness = 40;
+				const wallOffset = 25; 
+				const radius = DOHYO_RADIUS + wallOffset + (wallThickness / 2);
+
+				for (let i = 0; i < numSegments; i++) {
+					const angle = (i / numSegments) * Math.PI * 2;
+					const x = CENTER + Math.cos(angle) * radius;
+					const y = CENTER + Math.sin(angle) * radius;
+					const segmentLength = (2 * Math.PI * radius / numSegments) + 5; 
+
+					const segment = Bodies.rectangle(x, y, wallThickness, segmentLength, {
+						isStatic: true, angle: angle, restitution: BOARD_CONFIG.wallRestitution, friction: 0.1, render: { visible: false } 
+					});
+					
+					segment.gameData = { isWall: true, type: 'Wall', player: 0 }; 
+					wallBodies.push(segment);
+				}
+				Composite.add(engine.world, wallBodies);
+			}
+		}
+
+		function getTargetLayout() {
+			const targets = [];
+
+			// Helper functions now push plain coordinate objects instead of Matter bodies
+			const placeRow = (y, types, player) => {
+				const spacing = 50, startX = CENTER - ((types.length - 1) * spacing) / 2;
+				types.forEach((type, index) => targets.push({ x: startX + index * spacing, y: y, type: type, player: player }));
+			};
+			const placePiece = (x, y, type, player) => {
+				targets.push({ x: x, y: y, type: type, player: player });
+			};
+
+			// Load the correct challenge map coordinates
+			if (currentChallenge === 'Phalanx') {
+				placePiece(400, 650, 'King', 1);
+				[[350,700], [400,700], [450,700], [350,650], [450,650], [350,600], [400,600], [450,600]].forEach(p => placePiece(p[0], p[1], 'Pawn', 1));
+				placePiece(400, 150, 'King', 2);
+				[[350,100], [400,100], [450,100], [350,150], [450,150], [350,200], [400,200], [450,200]].forEach(p => placePiece(p[0], p[1], 'Pawn', 2));
+			} 
+			else if (currentChallenge === 'Cavalry') {
+				placePiece(400, 700, 'King', 1); placeRow(640, Array(8).fill('Knight'), 1); placeRow(580, Array(4).fill('Knight'), 1);
+				placePiece(400, 100, 'King', 2); placeRow(160, Array(8).fill('Knight'), 2); placeRow(220, Array(4).fill('Knight'), 2);
+			} 
+			else if (currentChallenge === 'Trench') {
+				placePiece(400, 700, 'King', 1); placeRow(440, Array(10).fill('Pawn'), 1);
+				placePiece(400, 100, 'King', 2); placeRow(360, Array(10).fill('Pawn'), 2);
+			} 
+			else if (currentChallenge === 'Sniper') {
+				placePiece(400, 700, 'King', 1); placePiece(150, 600, 'Rook', 1); placePiece(650, 600, 'Rook', 1); placePiece(250, 500, 'Rook', 1); placePiece(550, 500, 'Rook', 1);
+				placePiece(400, 100, 'King', 2); placePiece(150, 200, 'Rook', 2); placePiece(650, 200, 'Rook', 2); placePiece(250, 300, 'Rook', 2); placePiece(550, 300, 'Rook', 2);
+			} 
+			else if (currentChallenge === 'RoyalGuard') {
+				placePiece(400, 700, 'King', 1); placePiece(350, 640, 'Queen', 1); placePiece(450, 640, 'Queen', 1); placePiece(400, 580, 'Queen', 1);
+				placePiece(400, 100, 'King', 2); placePiece(350, 160, 'Queen', 2); placePiece(450, 160, 'Queen', 2); placePiece(400, 220, 'Queen', 2);
+			} 
+			else if (currentChallenge === 'PeasantUprising') {
+				placePiece(400, 700, 'King', 1); placeRow(640, Array(8).fill('Pawn'), 1); placeRow(580, Array(6).fill('Pawn'), 1);
+				placePiece(400, 100, 'King', 2); placeRow(160, Array(8).fill('Pawn'), 2); placeRow(220, Array(6).fill('Pawn'), 2);
+			} 
+			else if (currentChallenge === 'DavidGoliath') {
+				placePiece(400, 700, 'King', 1); placeRow(640, Array(8).fill('Pawn'), 1); placeRow(580, Array(4).fill('Pawn'), 1);
+				placePiece(400, 100, 'King', 2); placeRow(160, ['Rook', 'Bishop', 'Queen', 'Queen', 'Bishop', 'Rook'], 2); placePiece(400, 220, 'Rook', 2);
+			} 
+			else if (currentChallenge === 'Scattered') {
+				placePiece(400, 700, 'King', 1);
+				[[200,620,'Rook'],[600,620,'Rook'],[300,540,'Knight'],[500,540,'Knight'],[350,540,'Bishop'],[450,540,'Bishop'],[250,460,'Pawn'],[550,460,'Pawn'],[400,500,'Queen']].forEach(p => placePiece(p[0], p[1], p[2], 1));
+				placePiece(400, 100, 'King', 2);
+				[[200,180,'Rook'],[600,180,'Rook'],[300,260,'Knight'],[500,260,'Knight'],[350,260,'Bishop'],[450,260,'Bishop'],[250,340,'Pawn'],[550,340,'Pawn'],[400,300,'Queen']].forEach(p => placePiece(p[0], p[1], p[2], 2));
+			} 
+			else if (currentChallenge === 'CastleSiege') {
+				placePiece(400, 700, 'King', 1); placePiece(340, 700, 'Rook', 1); placePiece(460, 700, 'Rook', 1); placePiece(350, 640, 'Bishop', 1); placePiece(450, 640, 'Bishop', 1); placePiece(400, 580, 'Rook', 1);
+				placePiece(400, 100, 'King', 2); placeRow(160, Array(8).fill('Knight'), 2); placeRow(220, Array(6).fill('Knight'), 2);
+			} 
+			else if (currentChallenge === 'QuickDraw') {
+				placePiece(400, 700, 'King', 1); placePiece(400, 450, 'Queen', 1);
+				placePiece(400, 100, 'King', 2); placePiece(400, 350, 'Queen', 2);
+			}
+			else if (currentChallenge === 'Ambush') {
+				placePiece(400, 400, 'King', 1);
+				[[340,400],[460,400],[400,460],[400,340]].forEach(p => placePiece(p[0], p[1], 'Knight', 2));
+				[[280,400],[520,400],[400,520],[400,280],[315,485],[485,485],[315,315],[485,315]].forEach(p => placePiece(p[0], p[1], 'Pawn', 1));
+				placePiece(400, 100, 'King', 2);
+				placeRow(160, ['Rook', 'Rook', 'Rook'], 2);
+			} 
+			else if (currentChallenge === 'VipEscort') {
+				placePiece(150, 400, 'King', 1);
+				[[100, 400], [200, 400], [150, 450], [150, 350]].forEach(p => placePiece(p[0], p[1], 'Rook', 1));
+				placePiece(650, 400, 'King', 2);
+				[[600, 400], [700, 400], [650, 450], [650, 350]].forEach(p => placePiece(p[0], p[1], 'Knight', 2));
+				placeRow(200, ['Pawn','Pawn','Pawn'], 2);
+			} 
+			else if (currentChallenge === 'Traitor') {
+				placePiece(400, 200, 'King', 1);
+				[[350,200],[450,200],[400,250],[400,150]].forEach(p => placePiece(p[0], p[1], 'Pawn', 2));
+				placeRow(100, ['Rook', 'Queen', 'Rook'], 2);
+
+				placePiece(400, 600, 'King', 2);
+				[[350,600],[450,600],[400,650],[400,550]].forEach(p => placePiece(p[0], p[1], 'Pawn', 1));
+				placeRow(700, ['Rook', 'Queen', 'Rook'], 1);
+			} 
+			else if (currentChallenge === 'Gauntlet') {
+				placePiece(400, 700, 'King', 1);
+				placeRow(640, ['Knight', 'Knight', 'Knight'], 1);
+				[[300,550],[500,550],[250,450],[550,450],[200,350],[600,350],[300,250],[500,250]].forEach(p => placePiece(p[0], p[1], 'Pawn', 2));
+				placePiece(400, 400, 'Rook', 2);
+				placePiece(400, 100, 'King', 2);
+			} 
+			else if (currentChallenge === 'LoneWolf') {
+				placePiece(400, 700, 'King', 1);
+				placeRow(640, ['Queen', 'Queen', 'Queen'], 1);
+				placePiece(400, 100, 'King', 2);
+				placeRow(160, Array(10).fill('Pawn'), 2);
+				placeRow(220, Array(10).fill('Pawn'), 2);
+				placeRow(280, ['Rook', 'Knight', 'Bishop', 'Rook', 'Bishop', 'Knight', 'Rook'], 2);
+			} 
+			else if (currentChallenge === 'Crossfire') {
+				placePiece(200, 600, 'King', 1); placePiece(600, 650, 'Queen', 1); placePiece(500, 650, 'Bishop', 1);
+				placePiece(600, 200, 'King', 2); placePiece(150, 200, 'Queen', 2); placePiece(250, 200, 'Bishop', 2);
+				placePiece(400, 550, 'Rook', 1); placePiece(400, 250, 'Rook', 2);
+				placePiece(250, 400, 'Rook', 2); placePiece(550, 400, 'Rook', 1);
+				placePiece(400, 400, 'Knight', 1);
+			} 
+			else if (currentChallenge === 'NoMansLand') {
+				placePiece(350, 400, 'King', 1); placePiece(450, 400, 'King', 2);
+				placeRow(700, ['Rook', 'Knight', 'Bishop', 'Queen', 'Bishop', 'Knight', 'Rook'], 1);
+				placeRow(100, ['Rook', 'Knight', 'Bishop', 'Queen', 'Bishop', 'Knight', 'Rook'], 2);
+				[[100,400],[100,450],[100,350]].forEach(p => placePiece(p[0], p[1], 'Pawn', 1));
+				[[700,400],[700,450],[700,350]].forEach(p => placePiece(p[0], p[1], 'Pawn', 2));
+			} 
+			else if (currentChallenge === 'Checkpoint') {
+				placePiece(400, 700, 'King', 1);
+				placeRow(550, ['Rook', 'Pawn', 'Pawn', 'Pawn', 'Rook'], 1);
+				placePiece(400, 100, 'King', 2);
+				placeRow(250, ['Rook', 'Pawn', 'Pawn', 'Pawn', 'Rook'], 2);
+				placePiece(400, 400, 'Knight', 1); placePiece(350, 400, 'Knight', 2); placePiece(450, 400, 'Knight', 2);
+			} 
+			else if (currentChallenge === 'QueensGambit') {
+				placePiece(400, 700, 'King', 1);
+				placeRow(600, Array(6).fill('Knight'), 1); 
+				placeRow(540, Array(4).fill('Knight'), 1);
+				placePiece(400, 100, 'King', 2);
+				placeRow(400, ['Queen', 'Queen', 'Queen', 'Queen'], 2);
+			} 
+			else if (currentChallenge === 'TrojanHorse') {
+				placePiece(400, 700, 'King', 1);
+				placePiece(400, 640, 'Queen', 2);
+				[[340,640], [460,640], [400,580]].forEach(p => placePiece(p[0], p[1], 'Pawn', 1));
+				placePiece(400, 100, 'King', 2);
+				placePiece(400, 160, 'Queen', 1);
+				[[340,160], [460,160], [400,220]].forEach(p => placePiece(p[0], p[1], 'Pawn', 2));
+			}
+			else {
+				placeRow(700, ['Rook', 'Knight', 'Bishop', 'Queen', 'King', 'Bishop', 'Knight', 'Rook'], 1);
+				placeRow(640, Array(8).fill('Pawn'), 1);
+				placeRow(100, ['Rook', 'Knight', 'Bishop', 'Queen', 'King', 'Bishop', 'Knight', 'Rook'], 2);
+				placeRow(160, Array(8).fill('Pawn'), 2);
+			}
+			
+			return targets;
+		}
+
+        function resetGame(isGuestRestart = false) {
+            // Note: We DO NOT call Composite.clear(engine.world) here anymore!
+            // We also do not reset globalPieceIdCounter, because existing pieces keep their IDs.
+
+            gameState = { status: 'TRANSITIONING', turn: 1, activePiece: null, dragStart: null, mousePos: { x: 0, y: 0 }, capturedByP1: [], capturedByP2: [], promotingPiece: null, opponentAim: null };
+            rematchVotes = { 1: false, 2: false };
+            cpuConfig.isThinking = false;
+            
+            // FIXED: Wipe out the 'ghost' coordinates from the previous match!
+            Matter.Composite.allBodies(engine.world).forEach(b => {
+                if (b.gameData) {
+                    b.gameData.targetX = undefined;
+                    b.gameData.targetY = undefined;
+                    b.gameData.targetA = undefined;
+                }
+            });
+            
+            document.getElementById('game-over').style.display = 'none';
+			document.getElementById('promotion-menu').style.display = 'none';
+			document.getElementById('rematch-status').textContent = '';
+			
+			updateCapturedUI(); 
+			updateTurnIndicator(); 
+			updateGearVisibility();
+
+			// 1. Instantly update the physical boundaries
+			buildWall();
+
+			// 2. Determine where the pieces need to end up for the current challenge
+			const targetLayout = getTargetLayout();
+
+			// 3. Trigger the physics animation sequence!
+			animateBoardTransition(targetLayout, () => {
+				// Once all pieces snap into place, resume actual gameplay
+				gameState.status = 'PLAYING';
+				updateGearVisibility(); 
+				
+				if (networkMode === 'HOST' && !isGuestRestart) sendState();
+			});
+		}
+        
+        resetGame();
+		
+		// Easing function that mimics your CSS cubic-bezier(0.175, 0.885, 0.32, 1.275)
+		function easeOutBack(x) {
+			const c1 = 1.10158;
+			const c3 = c1 + 1;
+			return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+		}
+
+		function animateBoardTransition(targetLayout, onComplete) {
+			const DURATION = 600; // 1.2 seconds for a snappy but fluid feel
+			const startTime = performance.now();
+			
+			// 1. Gather all current pieces (ignore walls/sensors)
+			const currentPieces = Matter.Composite.allBodies(engine.world)
+				.filter(b => b.gameData && b.gameData.type !== 'Wall');
+			
+			let animations = [];
+			let unallocatedTargets = [...targetLayout]; // Clone array to track what needs spawning
+
+			// 2. Match existing pieces to target slots
+			currentPieces.forEach(piece => {				
+				// ==========================================
+				// NEW: REFRESH TUNING ON RECYCLED PIECES
+				// ==========================================
+				const config = PIECE_CONFIG[piece.gameData.type];
+				
+				// 1. If the radius changed, physically scale the Matter.js body
+				if (piece.gameData.radius !== config.radius) {
+					const scaleFactor = config.radius / piece.gameData.radius;
+					Matter.Body.scale(piece, scaleFactor, scaleFactor);
+					piece.gameData.radius = config.radius; // Update the gameData so the SVG visual scales too
+				}
+
+				// 2. Refresh physical Matter.js properties
+				Matter.Body.setMass(piece, config.mass);
+				piece.frictionAir = config.frictionAir;
+				piece.restitution = config.restitution;
+
+				// 3. Refresh custom game rules
+				piece.gameData.maxDrag = config.maxDrag;
+				piece.gameData.maxHop = config.maxHop;
+				piece.gameData.maxSturdiness = config.maxSturdiness;
+				// ==========================================
+
+				// Look for a target slot of the same piece type and player
+				const targetIdx = unallocatedTargets.findIndex(t => t.player === piece.gameData.player && t.type === piece.gameData.type);
+				
+				// Turn into a ghost for the transition
+				const originalMask = piece.collisionFilter.mask;
+				Matter.Body.setStatic(piece, true);
+				piece.collisionFilter.mask = 0; 
+				
+				// NEW: Save starting sturdiness for smooth "healing"
+				const startingSturdiness = piece.gameData.sturdiness; 
+				const startingAngle = piece.angle;
+
+				if (targetIdx !== -1) {
+					// MATCH FOUND: Slide to new position
+					const target = unallocatedTargets.splice(targetIdx, 1)[0];
+					animations.push({
+						body: piece,
+						startX: piece.position.x,   startY: piece.position.y,
+						endX: target.x,             endY: target.y,
+						startAngle: startingAngle,  endAngle: 0, 
+						startSturdiness: startingSturdiness, // <-- Update this
+						restoreMask: originalMask
+					});
+				} else {
+					// NO MATCH: Piece is not in the new layout, slide it off the board
+					const angleOut = Math.atan2(piece.position.y - CENTER, piece.position.x - CENTER);
+					animations.push({
+						body: piece,
+						startX: piece.position.x,   startY: piece.position.y,
+						endX: CENTER + Math.cos(angleOut) * 1000, 
+						endY: CENTER + Math.sin(angleOut) * 1000,
+						startAngle: startingAngle,  endAngle: startingAngle + (Math.PI * 2), 
+						startSturdiness: startingSturdiness, // <-- Update this
+						removeAfter: true 
+					});
+				}
+			});
+
+			// 3. Spawn missing pieces off-screen and slide them IN
+			unallocatedTargets.forEach(target => {
+				const angleIn = Math.atan2(target.y - CENTER, target.x - CENTER);
+				const startX = CENTER + Math.cos(angleIn) * 1000;
+				const startY = CENTER + Math.sin(angleIn) * 1000;
+				
+				// NOTE: Replace 'spawnPiece' with whatever your actual creation function is called
+				const newPiece = createPiece(startX, startY, target.type, target.player);
+				
+				Composite.add(engine.world, newPiece);
+				
+				const originalMask = newPiece.collisionFilter.mask;
+				Matter.Body.setStatic(newPiece, true);
+				newPiece.collisionFilter.mask = 0;
+
+				animations.push({
+					body: newPiece,
+					startX: startX,   startY: startY,
+					endX: target.x,   endY: target.y,
+					startAngle: Math.PI, endAngle: 0, 
+					startSturdiness: newPiece.gameData.maxSturdiness,
+					restoreMask: originalMask
+				});
+			});
+
+			// 4. The Animation Loop
+			function step(currentTime) {
+				let elapsed = currentTime - startTime;
+				let progress = Math.min(elapsed / DURATION, 1);
+				
+				// Apply our satisfying bounce easing
+				let ease = easeOutBack(progress);
+				
+				animations.forEach(anim => {
+					// Interpolate position
+					const currentX = anim.startX + (anim.endX - anim.startX) * ease;
+					const currentY = anim.startY + (anim.endY - anim.startY) * ease;
+					Matter.Body.setPosition(anim.body, { x: currentX, y: currentY });
+					
+					// Interpolate rotation
+					const currentAngle = anim.startAngle + (anim.endAngle - anim.startAngle) * ease;
+					Matter.Body.setAngle(anim.body, currentAngle);
+					
+					// NEW: Smoothly heal the piece back to its maximum sturdiness
+					if (anim.body.gameData) {
+						const max = anim.body.gameData.maxSturdiness;
+						anim.body.gameData.sturdiness = anim.startSturdiness + (max - anim.startSturdiness) * progress;
+					}
+				});
+				
+				if (progress < 1) {
+					requestAnimationFrame(step);
+				} else {
+					// 5. Cleanup Phase
+					animations.forEach(anim => {
+						if (anim.removeAfter) {
+							Matter.Composite.remove(engine.world, anim.body);
+						} else {
+							// Wake the piece back up and restore physical collisions
+							Matter.Body.setStatic(anim.body, false);
+							anim.body.isSensor = false; 
+							anim.body.collisionFilter.mask = 0xFFFFFFFF; // Force standard collisions!
+							Matter.Body.setVelocity(anim.body, {x: 0, y: 0});
+							Matter.Body.setAngularVelocity(anim.body, 0);
+						}
+					});
+					
+					if (onComplete) onComplete();
+				}
+			}
+			
+			// Kick off the animation
+			requestAnimationFrame(step);
+		}
+
+        // --- 5. UI MANAGEMENT ---
+        function updateTurnIndicator() {
+			const indicator = document.getElementById('turn-indicator');
+			const colorName = gameState.turn === 1 ? 'Silver' : 'Dark';
+			let newText = '';
+
+			// Determine what the text SHOULD be
+			if (networkMode === 'LOCAL') {
+				newText = `Player ${gameState.turn} (${colorName}) Turn`;
+			} else if (networkMode === 'CPU') {
+				newText = gameState.turn === myPlayerNumber ? `Your (${colorName}) Turn` : `CPU (${colorName}) Turn`;
+			} else {
+				newText = gameState.turn === myPlayerNumber ? `Your (${colorName}) Turn` : `Their (${colorName}) Turn`;
+			}
+
+			// Only touch the DOM and restart the animation if the text is actually changing
+			if (indicator.textContent !== newText) {
+				indicator.textContent = newText;
+				indicator.className = gameState.turn === 1 ? "player-1-turn" : "player-2-turn";
+
+				// Trigger the subtle fade-in/slide animation
+				indicator.classList.remove('turn-announce');
+				void indicator.offsetWidth; // Force a DOM reflow to restart the animation
+				indicator.classList.add('turn-announce');
+			}
+		}
+
+        function updateCapturedUI() {
+            const renderTokens = (id, types, pColor, sColor, svgColor) => {
+                const c = document.getElementById(id);
+                if (c.children.length !== types.length) c.innerHTML = types.map(t => `<div class="captured-token" style="background-color: ${pColor}; border: 2px solid ${sColor};"><svg viewBox="0 0 24 24" width="20" height="20"><path d="${PATHS[t]}" fill="${svgColor}" /></svg></div>`).join('');
+            };
+            renderTokens('captured-p1', gameState.capturedByP1, P2_COLOR, '#555', '#E0E0E0');
+            renderTokens('captured-p2', gameState.capturedByP2, P1_COLOR, '#FFF', '#111');
+        }
+
+        window.handleRematch = () => {
+            if (networkMode === 'LOCAL' || networkMode === 'CPU') return resetGame();
+            rematchVotes[myPlayerNumber] = true;
+            document.getElementById('rematch-status').textContent = 'Waiting for opponent...';
+            if (conn) conn.send({ type: 'REMATCH_VOTE', player: myPlayerNumber });
+            checkRematch();
+        };
+
+        function checkRematch() {
+            if (networkMode === 'HOST' && rematchVotes[1] && rematchVotes[2]) {
+                resetGame(); conn.send({ type: 'RESTART' });
+            }
+        }
+
+        window.handleQuit = (fromNetwork = false) => {
+			// 1. Instantly lock the game back to local to shield against ghost packets
+			networkMode = 'LOCAL'; 
+
+			if (conn) {
+				// 2. Use PeerJS's native .off() to safely deafen the connection
+				try {
+					conn.off('data'); 
+					conn.off('close'); // Prevent PeerJS from double-triggering handleQuit when we close it!
+				} catch(e) {}
+
+				if (!fromNetwork) {
+					window.safeNetSend({ type: 'QUIT' }); 
+				}
+				
+				// 3. Keep the delay so the QUIT packet successfully escapes before execution
+				setTimeout(() => {
+					if (conn) {
+						try { conn.close(); } catch(e) {} 
+						conn = null;
+					}
+				}, 150);
+			} else {
+				conn = null;
+			}
+
+			myPlayerNumber = 1; 
+			cpuConfig.enabled = false;
+			document.getElementById('challenge-select').value = 'Standard';
+			currentChallenge = 'Standard';
+			
+			unlockMenuUI(); 
+			
+			const statusElem = document.getElementById('network-status');
+			statusElem.textContent = fromNetwork ? 'Status: Opponent Disconnected' : 'Status: Local Match';
+			statusElem.style.color = fromNetwork ? '#ff5252' : ''; 
+			
+			resetGame();
+			
+			if (fromNetwork) {
+				setTimeout(() => { 
+					if (networkMode === 'LOCAL') {
+						statusElem.textContent = 'Status: Local Match'; 
+						statusElem.style.color = ''; 
+					}
+				}, 3500);
+			}
+		};
+
+        // --- 6. GAME RULES & PROMOTION ---
+        function checkPromotions() {
+			if (networkMode === 'GUEST') return false; 
+			const body = Composite.allBodies(engine.world).find(b => 
+				b.gameData.type === 'Pawn' && (
+					(b.gameData.player === 1 && b.position.y < P2_PROMO_LINE) || 
+					(b.gameData.player === 2 && b.position.y > P1_PROMO_LINE)
+				)
+			);
+			if (body) {
+				gameState.status = 'PROMOTING'; gameState.promotingPiece = body;
+				
+				if (networkMode === 'CPU' && body.gameData.player === cpuConfig.playerNumber) {
+					setTimeout(() => window.handlePromotionSelection('Queen', false), 400);
+				} else if (networkMode === 'LOCAL' || body.gameData.player === myPlayerNumber) {
+					showPromotionMenu(body);
+				}
+				
+				if (networkMode === 'HOST') sendState();
+				return true;
+			}
+			return false;
+		}
+
+		function showPromotionMenu(body) {
+			const menu = document.getElementById('promotion-menu');
+			menu.style.left = `${body.position.x}px`; menu.style.top = `${body.position.y}px`; 
+			const pC = body.gameData.player === 1 ? P1_COLOR : P2_COLOR, sC = body.gameData.player === 1 ? '#FFF' : '#555', vC = body.gameData.player === 1 ? '#111' : '#E0E0E0';
+			menu.innerHTML = ['Queen', 'Rook', 'Bishop', 'Knight'].map(t => `<div class="promo-btn" style="background-color: ${pC}; border: 2px solid ${sC};" onclick="handlePromotionSelection('${t}')"><svg viewBox="0 0 24 24" width="28" height="28"><path d="${PATHS[t]}" fill="${vC}" /></svg></div>`).join('');
+			menu.style.display = 'flex';
+		}
+
+		window.handlePromotionSelection = function(newType, fromNetwork = false) {
+			if (networkMode === 'GUEST' && !fromNetwork) {
+				conn.send({ type: 'ACTION_PROMOTE', newType: newType });
+				document.getElementById('promotion-menu').style.display = 'none'; return;
+			}
+			const ob = gameState.promotingPiece;
+			const healthPercent = ob.gameData.sturdiness / ob.gameData.maxSturdiness; // Maintain health percentage upon promotion!
+			Composite.remove(engine.world, ob);
+			const nb = createPiece(ob.position.x, ob.position.y, newType, ob.gameData.player);
+			nb.gameData.sturdiness = nb.gameData.maxSturdiness * healthPercent;
+			Body.setAngle(nb, ob.angle); Composite.add(engine.world, nb);
+			document.getElementById('promotion-menu').style.display = 'none'; gameState.promotingPiece = null;
+			if (networkMode !== 'GUEST' && !checkPromotions()) { gameState.turn = gameState.turn === 1 ? 2 : 1; gameState.status = 'PLAYING'; updateTurnIndicator(); }
+			if (networkMode === 'HOST') sendState();
+		};
+
+        // --- 7. INPUT & FLICK EXECUTION ---
+        const canvas = render.canvas;
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        function executeFlick(piece, force, isKnight, hopDist) {
+            if (isKnight) {
+                piece.gameData.isHopping = true; piece.gameData.hopStartPos = { x: piece.position.x, y: piece.position.y };
+                piece.gameData.targetHopDistance = hopDist; piece.collisionFilter.mask = 0x0000;
+            }
+            Body.applyForce(piece, piece.position, force);
+            AudioEngine.playFlick((piece.position.x - CENTER) / (CANVAS_SIZE / 2));
+            gameState.status = 'WAITING_FOR_STOP';
+            if (networkMode === 'HOST') sendState();
+        }
+
+        const handlePointerDown = (e) => {
+            if (e.button !== 0 || gameState.status !== 'PLAYING') return;
+            if ((networkMode === 'GUEST' || networkMode === 'HOST') && gameState.turn !== myPlayerNumber) return;
+            if (networkMode === 'CPU' && gameState.turn === cpuConfig.playerNumber) return; 
+
+            AudioEngine.init();
+            const rect = canvas.getBoundingClientRect(), sX = canvas.width / rect.width, sY = canvas.height / rect.height;
+            const clickPos = { x: (e.clientX - rect.left) * sX, y: (e.clientY - rect.top) * sY };
+            const piece = Query.point(Composite.allBodies(engine.world), clickPos).find(b => b.gameData && b.gameData.player === gameState.turn);
+            
+            if (piece) {
+                gameState.activePiece = piece; gameState.dragStart = { x: piece.position.x, y: piece.position.y }; gameState.mousePos = clickPos;
+                window.addEventListener('pointermove', handlePointerMove); window.addEventListener('pointerup', handlePointerUp); window.addEventListener('pointercancel', handlePointerUp); window.addEventListener('blur', handleCancelDrag); window.addEventListener('contextmenu', handleCancelDrag);
+                
+                if (conn && networkMode !== 'LOCAL') conn.send({ type: 'ACTION_AIM', pieceId: piece.gameData.id, mousePos: clickPos });
+            }
+        };
+
+        let lastAimSyncTime = 0; // Keeps track of when we last sent aim data
+
+		const handlePointerMove = (e) => {
+			if (!gameState.activePiece) return;
+			
+			const rect = canvas.getBoundingClientRect(), sX = canvas.width / rect.width, sY = canvas.height / rect.height;
+			
+			// 1. ALWAYS update local mousePos instantly so the player's own line stays 100% fluid
+			gameState.mousePos = { x: (e.clientX - rect.left) * sX, y: (e.clientY - rect.top) * sY };
+			
+			// 2. THROTTLE the network send to a max of 20 times a second (every 50ms)
+			const now = Date.now();
+			if (conn && networkMode !== 'LOCAL' && (now - lastAimSyncTime > 50)) {
+				
+				// 3. TRUNCATE coordinates to save string bytes
+				const truncatedMousePos = {
+					x: Math.round(gameState.mousePos.x * 10) / 10, // 1 decimal place is plenty for an aim line
+					y: Math.round(gameState.mousePos.y * 10) / 10
+				};
+				
+				conn.send({ 
+					type: 'ACTION_AIM', 
+					pieceId: gameState.activePiece.gameData.id, 
+					mousePos: truncatedMousePos 
+				});
+				
+				lastAimSyncTime = now;
+			}
+		};
+
+        const handleCancelDrag = (e) => {
+            e.preventDefault(); if (!gameState.activePiece) return;
+            window.removeEventListener('pointermove', handlePointerMove); window.removeEventListener('pointerup', handlePointerUp); window.removeEventListener('pointercancel', handlePointerUp); window.removeEventListener('blur', handleCancelDrag); window.removeEventListener('contextmenu', handleCancelDrag);
+            if (conn && networkMode !== 'LOCAL') conn.send({ type: 'ACTION_AIM', pieceId: null });
+            gameState.activePiece = null; gameState.dragStart = null;
+        };
+
+        const handlePointerUp = (e) => {
+            if (!gameState.activePiece) return;
+            window.removeEventListener('pointermove', handlePointerMove); window.removeEventListener('pointerup', handlePointerUp); window.removeEventListener('pointercancel', handlePointerUp); window.removeEventListener('blur', handleCancelDrag); window.removeEventListener('contextmenu', handleCancelDrag);
+
+            const pMaxDrag = gameState.activePiece.gameData.maxDrag;
+            let dx = gameState.activePiece.position.x - gameState.mousePos.x, dy = gameState.activePiece.position.y - gameState.mousePos.y, distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > pMaxDrag) { const s = pMaxDrag / distance; dx *= s; dy *= s; distance = pMaxDrag; }
+
+            if (conn && networkMode !== 'LOCAL') conn.send({ type: 'ACTION_AIM', pieceId: null });
+
+            const force = { x: dx * 0.0005 * gameState.activePiece.mass, y: dy * 0.0005 * gameState.activePiece.mass };
+            const isKnight = gameState.activePiece.gameData.type === 'Knight';
+            const hopDist = distance / pMaxDrag * gameState.activePiece.gameData.maxHop;
+
+            if (networkMode === 'GUEST') {
+                AudioEngine.playFlick((gameState.activePiece.position.x - CENTER) / (CANVAS_SIZE / 2));
+                conn.send({ type: 'ACTION_FLICK', bodyId: gameState.activePiece.gameData.id, force: force, isKnight: isKnight, hopDist: hopDist });
+            } else {
+                executeFlick(gameState.activePiece, force, isKnight, hopDist);
+            }
+            
+            gameState.activePiece = null; gameState.dragStart = null;
+        };
+
+        canvas.addEventListener('pointerdown', handlePointerDown);
+		
+		canvas.addEventListener('pointermove', (e) => {
+			// Continuously track the mouse position for the UI
+			hoverPos = { x: e.clientX, y: e.clientY };
+			
+			// If the HUD is on, check if we are hovering over a piece every time the mouse moves
+			if (advancedHudEnabled) updateTooltip();
+		});
+
+        // --- 8. ADVANCED CPU AI LOGIC (MINIMAX DEPTH-2 TIME MACHINE) ---
+        function executeCPUTurn() {
+            const cpuPieces = Composite.allBodies(engine.world).filter(b => b.gameData && b.gameData.player === cpuConfig.playerNumber);
+            const playerPieces = Composite.allBodies(engine.world).filter(b => 
+                b.gameData && 
+                b.gameData.player !== cpuConfig.playerNumber &&
+                b.gameData.type !== 'Wall' 
+            );
+
+            if (cpuPieces.length === 0 || playerPieces.length === 0) { cpuConfig.isThinking = false; return; }
+
+            let candidateMoves = [];
+            const valueMap = { 'King': 10000, 'Queen': 250, 'Rook': 150, 'Bishop': 130, 'Knight': 120, 'Pawn': 40 };
+            let activeBrain = cpuConfig.difficulty === 'Custom' ? CUSTOM_BRAIN : BRAIN_PRESETS[cpuConfig.difficulty];
+
+            // 2. BRAINSTORMING PHASE
+            cpuPieces.forEach(cpuP => {
+                let promoBonus = 0;
+                let distToPromo = Infinity;
+                if (cpuP.gameData.type === 'Pawn') {
+                    const promoLine = cpuConfig.playerNumber === 1 ? P2_PROMO_LINE : P1_PROMO_LINE;
+                    distToPromo = Math.abs(cpuP.position.y - promoLine);
+                    if (distToPromo < 250) promoBonus = (250 - distToPromo) * 0.8; 
+                }
+
+                playerPieces.forEach(plyP => {
+                    let dx = plyP.position.x - cpuP.position.x;
+                    let dy = plyP.position.y - cpuP.position.y;
+                    let distToTarget = Math.max(0.001, Math.sqrt(dx*dx + dy*dy));
+
+                    if (distToTarget > 650 && cpuP.gameData.type !== 'Queen' && cpuP.gameData.type !== 'Knight' && cpuP.gameData.type !== 'Rook' && cpuP.gameData.type !== 'Bishop') return;
+
+                    let baseScore = (valueMap[plyP.gameData.type] || 0) + promoBonus;
+
+                    if (cpuP.gameData.type === 'Queen') baseScore += 80;
+                    if (cpuP.gameData.type === 'Rook') baseScore += 50;
+                    if (cpuP.gameData.type === 'Bishop') baseScore += 40;
+                    if (cpuP.gameData.type === 'Knight') baseScore += 30;
+                    if (cpuP.gameData.type === 'Pawn') baseScore -= 20; 
+
+                    let enemyHealthPercent = Math.max(0, plyP.gameData.sturdiness / Math.max(1, plyP.gameData.maxSturdiness));
+                    if (enemyHealthPercent < 0.5) baseScore += (0.5 - enemyHealthPercent) * activeBrain.bloodthirst;
+                    if (plyP.gameData.type === 'King' && enemyHealthPercent < 0.35) baseScore += activeBrain.assassin; 
+
+                    let cpuKing = cpuPieces.find(k => k.gameData.type === 'King');
+                    if (cpuKing) {
+                        let kDx = cpuKing.position.x - plyP.position.x;
+                        let kDy = cpuKing.position.y - plyP.position.y;
+                        let kDist = Math.max(0.001, Math.sqrt(kDx*kDx + kDy*kDy));
+                        let outX = cpuKing.position.x - CENTER, outY = cpuKing.position.y - CENTER;
+                        let kTargetCenterDist = Math.max(0.001, Math.sqrt(outX*outX + outY*outY));
+                        let nOutX = outX / kTargetCenterDist, nOutY = outY / kTargetCenterDist;
+                        let nAtkX = kDx / kDist, nAtkY = kDy / kDist;
+                        let threatAlignment = (nOutX * nAtkX) + (nOutY * nAtkY);
+                        if (threatAlignment > 0.8 && kDist < 400) baseScore += 4000; 
+                    }
+
+                    let outX = plyP.position.x - CENTER, outY = plyP.position.y - CENTER;
+                    let distTargetToCenter = Math.max(0.001, Math.sqrt(outX*outX + outY*outY));
+                    let nOutX = outX / distTargetToCenter, nOutY = outY / distTargetToCenter;
+                    let nAtkX = dx / distToTarget, nAtkY = dy / distToTarget;
+                    let alignment = (nOutX * nAtkX) + (nOutY * nAtkY);
+                    
+                    let sumoMultiplier = BOARD_CONFIG.wallEnabled ? 20 : 500;
+                    if (alignment > 0.6) baseScore += (alignment * sumoMultiplier); 
+
+                    let distanceTaxRate = (cpuP.gameData.type === 'Queen' || cpuP.gameData.type === 'Knight' || cpuP.gameData.type === 'Bishop') ? 0.01 : 0.1; 
+                    baseScore -= (distToTarget * distanceTaxRate);
+
+                    candidateMoves.push({ piece: cpuP, target: plyP, dist: distToTarget, type: 'attack', score: baseScore });
+                });
+
+                if (cpuP.gameData.type === 'Pawn' && promoBonus > 0) {
+                    let marchY = cpuConfig.playerNumber === 1 ? P2_PROMO_LINE : P1_PROMO_LINE;
+                    candidateMoves.push({ 
+                        piece: cpuP, 
+                        target: { position: { x: cpuP.position.x, y: marchY } }, 
+                        dist: distToPromo, 
+                        type: 'march', 
+                        score: promoBonus * 1.5 
+                    });
+                }
+
+                if (cpuP.gameData.type === 'King') {
+                    let cpuDistToCenter = Math.sqrt(Math.pow(cpuP.position.x - CENTER, 2) + Math.pow(cpuP.position.y - CENTER, 2));
+                    candidateMoves.push({ piece: cpuP, target: { position: { x: CENTER, y: CENTER } }, dist: cpuDistToCenter, type: 'flee', score: activeBrain.cowardice });
+                }
+            });
+
+            candidateMoves.sort((a, b) => b.score - a.score);
+            let topCandidates = candidateMoves.slice(0, activeBrain.breadth);
+            let bestSimulatedMove = null;
+            let highestSimScore = -Infinity;
+
+            if (activeBrain.breadth <= 1) {
+                bestSimulatedMove = topCandidates[0];
+            } else {
+                // 3. MINIMAX SIMULATION PHASE
+                topCandidates.forEach(candidate => {
+                    const simEngine = Engine.create();
+                    simEngine.world.gravity.y = 0; simEngine.world.gravity.x = 0;
+                    let simCpuPiece = null;
+
+                Events.on(simEngine, 'collisionStart', (e) => {
+					const wallHitsThisTick = new Set(); // Track pieces that hit a wall this frame
+
+					e.pairs.forEach((p) => {
+						if (p.bodyA.gameData && p.bodyB.gameData) {
+							const impactVel = Math.sqrt(Math.pow(p.bodyA.velocity.x - p.bodyB.velocity.x, 2) + Math.pow(p.bodyA.velocity.y - p.bodyB.velocity.y, 2));
+							
+							if (impactVel > 0.5) {
+								let isWallA = p.bodyA.gameData.type === 'Wall';
+								let isWallB = p.bodyB.gameData.type === 'Wall';
+								
+								let massA = isWallA ? 50 : p.bodyA.mass;
+								let massB = isWallB ? 50 : p.bodyB.mass;
+
+								// Apply damage to Body A
+								if (!isWallA) {
+									if (!isWallB || !wallHitsThisTick.has(p.bodyA.gameData.id)) {
+										p.bodyA.gameData.sturdiness -= (impactVel * massB * DAMAGE_SCALAR);
+										if (isWallB) wallHitsThisTick.add(p.bodyA.gameData.id);
+									}
+								}
+								
+								// Apply damage to Body B
+								if (!isWallB) {
+									if (!isWallA || !wallHitsThisTick.has(p.bodyB.gameData.id)) {
+										p.bodyB.gameData.sturdiness -= (impactVel * massA * DAMAGE_SCALAR);
+										if (isWallA) wallHitsThisTick.add(p.bodyB.gameData.id);
+									}
+								}
+							}
+						}
+					});
+				});
+
+                    Composite.allBodies(engine.world).forEach(b => {
+                        let clone;
+                        if (b.gameData && b.gameData.type === 'Wall') {
+                            const segmentLength = (2 * Math.PI * (DOHYO_RADIUS + 20) / 64) + 5;
+                            clone = Bodies.rectangle(b.position.x, b.position.y, 40, segmentLength, {
+                                isStatic: true, angle: b.angle, restitution: b.restitution, friction: b.friction
+                            });
+                        } else {
+                            clone = Bodies.circle(b.position.x, b.position.y, b.gameData.radius, {
+                                frictionAir: b.gameData.type === 'Knight' ? 0.04 : b.frictionAir, 
+                                restitution: b.restitution, friction: b.friction
+                            });
+                            Body.setMass(clone, b.mass);
+                            Body.setVelocity(clone, {x: b.velocity.x, y: b.velocity.y});
+                        }
+                        
+                        clone.gameData = { ...b.gameData, sturdiness: b.gameData.sturdiness }; 
+                        Composite.add(simEngine.world, clone);
+                        if (b === candidate.piece) simCpuPiece = clone;
+                    });
+
+                    function fastForwardSandbox(ticks) {
+                        for(let t = 0; t < ticks; t++) {
+                            Engine.update(simEngine, 1000/60);
+                            const currentSimBodies = Composite.allBodies(simEngine.world);
+                            
+                            for (let b of currentSimBodies) {
+                                if (b.gameData && b.gameData.isHopping) {
+                                    const d = Math.sqrt(Math.pow(b.position.x - b.gameData.hopStartPos.x, 2) + Math.pow(b.position.y - b.gameData.hopStartPos.y, 2));
+                                    if (d >= b.gameData.targetHopDistance || b.speed < 0.5) { 
+                                        b.gameData.isHopping = false; 
+                                        b.collisionFilter.mask = 0xFFFFFFFF; 
+                                        for (let other of currentSimBodies) {
+                                            if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
+                                            let ox = other.position.x - b.position.x, oy = other.position.y - b.position.y;
+                                            let odist = Math.max(0.001, Math.sqrt(ox*ox + oy*oy));
+                                            if (odist < (b.gameData.radius + other.gameData.radius)) {
+                                                let strikeF = 0.08 * other.mass;
+                                                Body.applyForce(other, other.position, { x: (ox/odist) * strikeF, y: (oy/odist) * strikeF });
+                                                other.gameData.sturdiness -= 30;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            for (let i = currentSimBodies.length - 1; i >= 0; i--) {
+                                let b = currentSimBodies[i];
+                                let isOOB = Math.sqrt(Math.pow(b.position.x - CENTER, 2) + Math.pow(b.position.y - CENTER, 2)) > DOHYO_RADIUS;
+                                let isShattered = b.gameData.sturdiness <= 0;
+                                if (isOOB || isShattered) {
+                                    Composite.remove(simEngine.world, b);
+                                }
+                            }
+                        }
+                    }
+
+                    // --- LAYER 1 SIMULATION ---
+                    let targetDx = candidate.target.position.x - simCpuPiece.position.x;
+                    let targetDy = candidate.target.position.y - simCpuPiece.position.y;
+                    let angle = Math.atan2(targetDy, targetDx);
+                    const pMaxDrag = simCpuPiece.gameData.maxDrag;
+                    
+                    let dragDist = pMaxDrag;
+                    if (simCpuPiece.gameData.type === 'Knight') {
+                        let maxH = Math.max(1, simCpuPiece.gameData.maxHop || 300);
+                        dragDist = Math.min((candidate.dist / maxH) * pMaxDrag, pMaxDrag);
+                    } else if (candidate.type === 'flee' || candidate.type === 'march') { 
+                        dragDist = pMaxDrag; 
+                    } else {
+                        if (candidate.dist < 100 && cpuConfig.difficulty !== 'Skilled' && cpuConfig.difficulty !== 'Custom') { dragDist = pMaxDrag * 0.6; }
+                        if (cpuConfig.difficulty === 'Easy') dragDist *= (0.6 + Math.random() * 0.4);
+                    }
+                    
+                    let dragDx = -Math.cos(angle) * dragDist;
+                    let dragDy = -Math.sin(angle) * dragDist;
+                    
+                    if (simCpuPiece.gameData.type === 'Knight') {
+                        simCpuPiece.gameData.isHopping = true;
+                        simCpuPiece.gameData.hopStartPos = { x: simCpuPiece.position.x, y: simCpuPiece.position.y };
+                        simCpuPiece.gameData.targetHopDistance = dragDist / pMaxDrag * (simCpuPiece.gameData.maxHop || 300);
+                        simCpuPiece.collisionFilter.mask = 0x0000;
+                    }
+                    
+                    Body.applyForce(simCpuPiece, simCpuPiece.position, { 
+                        x: -dragDx * 0.0005 * simCpuPiece.mass, 
+                        y: -dragDy * 0.0005 * simCpuPiece.mass 
+                    });
+
+                    fastForwardSandbox(activeBrain.ticks);
+
+                    let aiKingAlive = false;
+                    let playerKingAliveL1 = false;
+                    Composite.allBodies(simEngine.world).forEach(b => {
+                        if (b.gameData && b.gameData.type === 'King') {
+                            if (b.gameData.player === cpuConfig.playerNumber) aiKingAlive = true;
+                            else playerKingAliveL1 = true;
+                        }
+                    });
+
+                    if (aiKingAlive && playerKingAliveL1) {
+                        let bestPlayerMove = null;
+                        let bestPlayerScore = -Infinity;
+                        const simBodies = Composite.allBodies(simEngine.world);
+                        const simCpuPieces = simBodies.filter(b => b.gameData && b.gameData.player === cpuConfig.playerNumber);
+                        const simPlyPieces = simBodies.filter(b => b.gameData && b.gameData.player !== cpuConfig.playerNumber && b.gameData.type !== 'Wall');
+
+                        simPlyPieces.forEach(plyP => {
+                            simCpuPieces.forEach(cpuP => {
+                                let dx = cpuP.position.x - plyP.position.x;
+                                let dy = cpuP.position.y - plyP.position.y;
+                                let dist = Math.max(0.001, Math.sqrt(dx*dx + dy*dy));
+                                if (dist > 600) return;
+                                
+                                let baseScore = valueMap[cpuP.gameData.type] || 0;
+                                let outX = cpuP.position.x - CENTER, outY = cpuP.position.y - CENTER;
+                                let distTargetToCenter = Math.max(0.001, Math.sqrt(outX*outX + outY*outY));
+                                let nOutX = outX / distTargetToCenter, nOutY = outY / distTargetToCenter;
+                                let nAtkX = dx / dist, nAtkY = dy / dist;
+                                let alignment = (nOutX * nAtkX) + (nOutY * nAtkY);
+                                
+                                if (alignment > 0.8) baseScore += 5000; 
+                                
+                                let score = baseScore - dist * 0.1;
+                                if (score > bestPlayerScore) {
+                                    bestPlayerScore = score;
+                                    bestPlayerMove = { piece: plyP, target: cpuP, dist: dist };
+                                }
+                            });
+                        });
+
+                        if (bestPlayerMove) {
+                            let pDx = bestPlayerMove.target.position.x - bestPlayerMove.piece.position.x;
+                            let pDy = bestPlayerMove.target.position.y - bestPlayerMove.piece.position.y;
+                            let pAngle = Math.atan2(pDy, pDx);
+                            let plyMaxDrag = bestPlayerMove.piece.gameData.maxDrag;
+                            let pDragDist = bestPlayerMove.piece.gameData.type === 'Knight' ? Math.min((bestPlayerMove.dist / Math.max(1, bestPlayerMove.piece.gameData.maxHop || 300)) * plyMaxDrag, plyMaxDrag) : plyMaxDrag;
+                            
+                            let pfDx = -Math.cos(pAngle) * pDragDist;
+                            let pfDy = -Math.sin(pAngle) * pDragDist;
+                            
+                            if (bestPlayerMove.piece.gameData.type === 'Knight') {
+                                bestPlayerMove.piece.gameData.isHopping = true;
+                                bestPlayerMove.piece.gameData.hopStartPos = { x: bestPlayerMove.piece.position.x, y: bestPlayerMove.piece.position.y };
+                                bestPlayerMove.piece.gameData.targetHopDistance = pDragDist / plyMaxDrag * (bestPlayerMove.piece.gameData.maxHop || 300);
+                                bestPlayerMove.piece.collisionFilter.mask = 0x0000;
+                            }
+
+                            Body.applyForce(bestPlayerMove.piece, bestPlayerMove.piece.position, { 
+                                x: -pfDx * 0.0005 * bestPlayerMove.piece.mass, 
+                                y: -pfDy * 0.0005 * bestPlayerMove.piece.mass 
+                            });
+
+                            fastForwardSandbox(activeBrain.ticks);
+                        }
+                    }
+
+                    // --- SCORING: Evaluate the final consequences ---
+                    let boardScore = 0;
+                    let cpuKingStillAlive = false;
+                    let playerKingAliveFinal = false;
+
+                    let pKing = Composite.allBodies(simEngine.world).find(b => b.gameData && b.gameData.type === 'King' && b.gameData.player !== cpuConfig.playerNumber);
+
+                    Composite.allBodies(simEngine.world).forEach(b => {
+                        if (!b.gameData || b.gameData.type === 'Wall') return; 
+
+                        let val = valueMap[b.gameData.type] || 0;
+                        let hpRatio = Math.max(0, b.gameData.sturdiness / Math.max(1, b.gameData.maxSturdiness));
+                        let effectiveVal = val * (0.5 + 0.5 * hpRatio); 
+
+                        if (b.gameData.player === cpuConfig.playerNumber) {
+                            boardScore += effectiveVal;
+                            if (b.gameData.type === 'King') cpuKingStillAlive = true;
+                            
+                            if (pKing) {
+                                let d = Math.max(1, Math.sqrt(Math.pow(b.position.x - pKing.position.x, 2) + Math.pow(b.position.y - pKing.position.y, 2)));
+                                boardScore -= (d * 0.001); 
+                            }
+                        } else {
+                            boardScore -= (effectiveVal * activeBrain.lossAversion); 
+                            if (b.gameData.type === 'King') playerKingAliveFinal = true;
+                        }
+                    });
+
+                    if (!cpuKingStillAlive) boardScore -= 100000; 
+                    if (!playerKingAliveFinal) boardScore += 100000; 
+
+                    boardScore += (Math.random() * 5); 
+
+                    if (boardScore > highestSimScore) {
+                        highestSimScore = boardScore;
+                        bestSimulatedMove = candidate;
+                    }
+
+                    Engine.clear(simEngine); 
+                });
+            }
+
+            if (!bestSimulatedMove) { cpuConfig.isThinking = false; return; }
+
+            // 3. EXECUTE THE CHOSEN MOVE
+            let targetDx = bestSimulatedMove.target.position.x - bestSimulatedMove.piece.position.x;
+            let targetDy = bestSimulatedMove.target.position.y - bestSimulatedMove.piece.position.y;
+            let angle = Math.atan2(targetDy, targetDx);
+
+            let inaccuracy = 0;
+            if (cpuConfig.difficulty === 'Easy') inaccuracy = (Math.random() - 0.5) * 0.4;
+            else if (cpuConfig.difficulty === 'Average') inaccuracy = (Math.random() - 0.5) * 0.15;
+            angle += inaccuracy;
+
+            const pMaxDrag = bestSimulatedMove.piece.gameData.maxDrag;
+            let dragDist = pMaxDrag;
+
+            if (bestSimulatedMove.piece.gameData.type === 'Knight') {
+                let idealDrag = (bestSimulatedMove.dist / Math.max(1, bestSimulatedMove.piece.gameData.maxHop || 300)) * pMaxDrag;
+                dragDist = Math.min(idealDrag, pMaxDrag);
+            } else if (bestSimulatedMove.type === 'flee' || bestSimulatedMove.type === 'march') { 
+                dragDist = pMaxDrag; 
+            } else {
+                if (bestSimulatedMove.dist < 100 && cpuConfig.difficulty !== 'Skilled' && cpuConfig.difficulty !== 'Custom') { dragDist = pMaxDrag * 0.6; }
+                if (cpuConfig.difficulty === 'Easy') dragDist *= (0.6 + Math.random() * 0.4);
+            }
+            
+            let dragDx = -Math.cos(angle) * dragDist;
+            let dragDy = -Math.sin(angle) * dragDist;
+
+            gameState.opponentAim = { pieceId: bestSimulatedMove.piece.gameData.id, mousePos: { x: bestSimulatedMove.piece.position.x, y: bestSimulatedMove.piece.position.y } };
+            
+            let startTime = Date.now();
+            const animDuration = 600;
+
+            function animateAim() {
+                if (gameState.status !== 'PLAYING') return;
+                let elapsed = Date.now() - startTime;
+                let progress = Math.min(elapsed / animDuration, 1.0);
+                let ease = 1 - Math.pow(1 - progress, 3); 
+
+                gameState.opponentAim.mousePos.x = bestSimulatedMove.piece.position.x + (dragDx * ease);
+                gameState.opponentAim.mousePos.y = bestSimulatedMove.piece.position.y + (dragDy * ease);
+
+                if (progress < 1.0) {
+                    requestAnimationFrame(animateAim);
+                } else {
+                    setTimeout(() => {
+                        gameState.opponentAim = null;
+                        const force = { x: -dragDx * 0.0005 * bestSimulatedMove.piece.mass, y: -dragDy * 0.0005 * bestSimulatedMove.piece.mass };
+                        const isKnight = bestSimulatedMove.piece.gameData.type === 'Knight';
+                        const hopDist = dragDist / pMaxDrag * (bestSimulatedMove.piece.gameData.maxHop || 300);
+                        executeFlick(bestSimulatedMove.piece, force, isKnight, hopDist);
+                        cpuConfig.isThinking = false;
+                    }, 400);
+                }
+            }
+
+            animateAim();
+        }
+
+        // --- 9. THE MAIN ENGINE TICK & KINETIC DAMAGE LOGIC ---
+        let syncFrameCounter = 0;
+
+        function customEngineTick() {
+            Engine.update(engine, 1000 / 60);
+
+            if (gameState.status === 'GAME_OVER') return;
+            
+            if (networkMode === 'CPU' && gameState.turn === cpuConfig.playerNumber && gameState.status === 'PLAYING' && !cpuConfig.isThinking) {
+                cpuConfig.isThinking = true;
+                setTimeout(executeCPUTurn, 500); 
+            }
+            
+            if (networkMode !== 'GUEST') {
+                const bodies = Composite.allBodies(engine.world);
+                
+                for (let b of bodies) {
+                    if (b.gameData && b.gameData.isHopping) {
+                        const dist = Math.sqrt(Math.pow(b.position.x - b.gameData.hopStartPos.x, 2) + Math.pow(b.position.y - b.gameData.hopStartPos.y, 2));
+                        if (dist >= b.gameData.targetHopDistance || b.speed < 0.5) { 
+                            b.gameData.isHopping = false; 
+                            b.collisionFilter.mask = 0xFFFFFFFF; 
+
+                            for (let other of bodies) {
+                                if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
+
+                                let dx = other.position.x - b.position.x;
+                                let dy = other.position.y - b.position.y;
+                                let overlapDist = Math.sqrt(dx * dx + dy * dy);
+                                let sumRadii = b.gameData.radius + other.gameData.radius;
+
+                                if (overlapDist < sumRadii) {
+                                    if (overlapDist === 0) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; overlapDist = Math.sqrt(dx*dx + dy*dy); }
+                                    let nX = dx / overlapDist;
+                                    let nY = dy / overlapDist;
+
+                                    let strikeForce = 0.08 * other.mass;
+                                    Body.applyForce(other, other.position, { x: nX * strikeForce, y: nY * strikeForce });
+                                    
+                                    // Knight shockwave deals flat damage
+                                    other.gameData.sturdiness -= 30;
+
+                                    AudioEngine.playClack(1.0, (b.position.x - CENTER) / (CANVAS_SIZE / 2));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // OOB and SHATTERING CHECK
+                for (let b of bodies) {
+                    if (!b.gameData) continue;
+                    if (gameState.status === 'TRANSITIONING') continue;
+                    const dist = Math.sqrt(Math.pow(b.position.x - CENTER, 2) + Math.pow(b.position.y - CENTER, 2));
+                    const isOOB = dist > (BOARD_CONFIG.wallEnabled ? DOHYO_RADIUS + 50 : DOHYO_RADIUS);
+                    const isShattered = b.gameData.sturdiness <= 0;
+
+                    if (isOOB || isShattered) {
+                        // Dynamically calculate volume based on velocity with a guaranteed baseline
+                        let speedVol = Math.min((b.speed / 15) + 0.3, 1.0);
+                        let panVal = (b.position.x - CENTER) / (CANVAS_SIZE / 2);
+
+                        if (isOOB) {
+                            AudioEngine.playThud(speedVol, panVal);
+                        } else if (isShattered) {
+                            AudioEngine.playShatter(speedVol, panVal);
+                            const pieceColor = b.gameData.player === 1 ? P1_COLOR : P2_COLOR;
+                            const impactForce = b.gameData.lastImpactVel || b.speed || 5; 
+                            spawnShatterParticles(b.position.x, b.position.y, pieceColor, impactForce, b.gameData.radius);
+                        }
+
+                        Composite.remove(engine.world, b);
+                        if (b.gameData.type === 'King') {
+                            gameState.status = 'GAME_OVER';
+                            document.getElementById('win-message').textContent = `${b.gameData.player === 1 ? 'PLAYER 2 (DARK)' : 'PLAYER 1 (SILVER)'} WINS!`;
+                            document.getElementById('game-over').style.display = 'block';
+                            updateGearVisibility();
+                            if (networkMode === 'HOST') sendState(); 
+                        } else {
+                            if (b.gameData.player === 1) gameState.capturedByP2.push(b.gameData.type); else gameState.capturedByP1.push(b.gameData.type);
+                            updateCapturedUI();
+                        }
+                    }
+                }
+
+                if (gameState.status === 'WAITING_FOR_STOP') {
+                    let allStopped = true;
+                    for (let b of bodies) { if (b.speed > 0.1 || Math.abs(b.angularVelocity) > 0.01) { allStopped = false; break; } }
+                    if (allStopped && !checkPromotions()) { gameState.turn = gameState.turn === 1 ? 2 : 1; gameState.status = 'PLAYING'; updateTurnIndicator(); }
+                }
+
+                // =========================================================
+				// NEW: SMART DYNAMIC NETWORK THROTTLING
+				// =========================================================
+				if (networkMode === 'HOST') {
+					syncFrameCounter++;
+
+					// 1. Determine if the physics engine is actively simulating movement
+					let isBoardMoving = false;
+					for (let b of bodies) {
+						// If any piece is moving faster than a tiny crawl, the board is "active"
+						if (b.gameData && b.gameData.type !== 'Wall' && (b.speed > 0.1 || Math.abs(b.angularVelocity) > 0.01)) {
+							isBoardMoving = true;
+							break;
+						}
+					}
+
+					// 2. Dynamic Sync Rate:
+					// 20 FPS (every 3 ticks) when pieces are crashing and sliding.
+					// 2 FPS "Heartbeat" (every 30 ticks) when players are just thinking.
+					let syncThreshold = isBoardMoving ? 3 : 30;
+
+					if (syncFrameCounter >= syncThreshold) {
+						if (gameState.status !== 'TRANSITIONING') {
+							sendState();
+						}
+						syncFrameCounter = 0;
+					}
+				}
+
+            } else if (gameState.status !== 'TRANSITIONING') { // FIXED: Added transition shield
+                // =========================================================
+                // NEW: GUEST-ONLY LERP (LINEAR INTERPOLATION) LOGIC
+                // =========================================================
+                const bodies = Composite.allBodies(engine.world);
+                
+                // Glide 30% of the way to the target coordinate every frame
+                const lerpFactor = 0.3; 
+
+                for (let b of bodies) {
+                    if (b.gameData && b.gameData.targetX !== undefined) {
+                        
+                        // Calculate the new smoothed position
+                        const newX = b.position.x + (b.gameData.targetX - b.position.x) * lerpFactor;
+                        const newY = b.position.y + (b.gameData.targetY - b.position.y) * lerpFactor;
+                        
+                        Body.setPosition(b, { x: newX, y: newY });
+
+                        // Smooth out the rotation as well
+                        const newA = b.angle + (b.gameData.targetA - b.angle) * lerpFactor;
+                        Body.setAngle(b, newA);
+                    }
+                }
+            }
+        }
+
+        // KINETIC DAMAGE EVENT LISTENER
+        Events.on(engine, 'collisionStart', (e) => {
+			const wallHitsThisTick = new Set(); // Track pieces that hit a wall this frame
+
+			e.pairs.forEach((p) => {
+				if (p.bodyA.gameData && p.bodyB.gameData) {
+					const impactVel = Math.sqrt(Math.pow(p.bodyA.velocity.x - p.bodyB.velocity.x, 2) + Math.pow(p.bodyA.velocity.y - p.bodyB.velocity.y, 2));
+					if (impactVel > 0.5) {
+						AudioEngine.playClack(Math.min(impactVel / 15, 1.0), (((p.bodyA.position.x + p.bodyB.position.x) / 2) - CENTER) / (CANVAS_SIZE / 2));
+						
+						p.bodyA.gameData.lastImpactVel = impactVel;
+                        p.bodyB.gameData.lastImpactVel = impactVel;
+						
+						if (networkMode !== 'GUEST') {
+							let isWallA = p.bodyA.gameData.type === 'Wall';
+							let isWallB = p.bodyB.gameData.type === 'Wall';
+							
+							let massA = isWallA ? 50 : p.bodyA.mass;
+							let massB = isWallB ? 50 : p.bodyB.mass;
+
+							// Apply damage to Body A
+							if (!isWallA) {
+								if (!isWallB || !wallHitsThisTick.has(p.bodyA.gameData.id)) {
+									p.bodyA.gameData.sturdiness -= (impactVel * massB * DAMAGE_SCALAR);
+									if (isWallB) wallHitsThisTick.add(p.bodyA.gameData.id);
+								}
+							}
+							
+							// Apply damage to Body B
+							if (!isWallB) {
+								if (!isWallA || !wallHitsThisTick.has(p.bodyB.gameData.id)) {
+									p.bodyB.gameData.sturdiness -= (impactVel * massA * DAMAGE_SCALAR);
+									if (isWallA) wallHitsThisTick.add(p.bodyB.gameData.id);
+								}
+							}
+						}
+					}
+				}
+			});
+		});
+
+        const workerCode = `
+			let interval;
+			self.onmessage = function(e) {
+				if (e.data === 'start') {
+					clearInterval(interval);
+					interval = setInterval(() => self.postMessage('tick'), 1000 / 60);
+				}
+			};
+		`;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const metronome = new Worker(URL.createObjectURL(blob));
+        metronome.onmessage = () => customEngineTick();
+        metronome.postMessage('start');
+
+        // --- 10. RENDERING & PROCEDURAL FRACTURES ---
+        const SKINS = {
+			'Classic':      { arena: '#dbdbdb', rim: '#2c1e16', danger: '#b71c1c', glow: 'rgba(183, 28, 28, 0.15)' },
+			'Wood':         { arena: '#e3c598', rim: '#4a2c11', danger: '#8b0000', glow: 'rgba(139, 0, 0, 0.15)' },
+			'Checkerboard': { arena: '#222222', rim: '#0a0a0a', danger: '#8A2BE2', glow: 'rgba(138, 43, 226, 0.15)' },
+			'Felt':         { arena: '#357a58', rim: '#1b4332', danger: '#ffb703', glow: 'rgba(255, 183, 3, 0.15)' },
+			'Marble':       { arena: '#ffffff', rim: '#b0b0b0', danger: '#111111', glow: 'rgba(0, 0, 0, 0.1)' }
+		};
+
+		Events.on(render, 'beforeRender', () => {
+			const ctx = render.context;
+			const skin = SKINS[BOARD_CONFIG.skin] || SKINS['Classic'];
+
+			// Draw the main arena floor
+			ctx.beginPath(); ctx.arc(CENTER, CENTER, DOHYO_RADIUS, 0, 2 * Math.PI); ctx.fillStyle = skin.arena; ctx.fill();
+			
+			// Draw the danger rims using the dynamic skin colors
+			if (!BOARD_CONFIG.wallEnabled) {
+				ctx.save(); ctx.beginPath(); ctx.arc(CENTER, CENTER, DOHYO_RADIUS + 12, 0, 2 * Math.PI); ctx.lineWidth = 24; ctx.strokeStyle = skin.rim; ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 20; ctx.stroke(); ctx.restore();
+				ctx.save(); ctx.beginPath(); ctx.arc(CENTER, CENTER, DOHYO_RADIUS, 0, 2 * Math.PI); ctx.lineWidth = 4; ctx.strokeStyle = skin.danger; ctx.setLineDash([15, 10]); ctx.stroke();
+				ctx.beginPath(); ctx.arc(CENTER, CENTER, DOHYO_RADIUS - 4, 0, 2 * Math.PI); ctx.lineWidth = 8; ctx.strokeStyle = skin.glow; ctx.stroke(); ctx.restore();
+			}
+		});
+
+        Events.on(render, 'afterRender', () => {
+			const ctx = render.context;
+			[...Composite.allBodies(engine.world)]
+				.filter(b => b.gameData && b.gameData.type !== 'Wall') // Ignore walls
+				.sort((a, b) => (a.gameData && a.gameData.isHopping ? 1 : 0) - (b.gameData && b.gameData.isHopping ? 1 : 0)).forEach(b => {
+				
+				if (b.gameData && b.gameData.path2D) {
+                    ctx.save(); 
+                    ctx.translate(b.position.x, b.position.y); 
+                    ctx.rotate(b.angle);
+                    
+                    // 1. Draw Inner SVG Icon
+                    ctx.save();
+                    if (b.gameData.isHopping) { ctx.scale(1.3, 1.3); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 15; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 15; }
+                    const scale = (b.gameData.radius * 1.5) / 24; 
+                    ctx.scale(scale, scale); 
+                    ctx.translate(-12, -12);
+                    ctx.fillStyle = b.gameData.player === 1 ? '#111' : '#E0E0E0'; 
+                    ctx.fill(b.gameData.path2D); 
+                    ctx.restore();
+
+                    // 2. Overlay Procedural Fractures
+                    const hpRatio = Math.max(0, b.gameData.sturdiness / b.gameData.maxSturdiness);
+                    const damageRatio = 1 - hpRatio;
+
+                    if (damageRatio > 0.05 && b.gameData.fractures) {
+                        ctx.lineWidth = 0.1 + (damageRatio * 2.5); // Using your tweaked base width!
+                        ctx.lineJoin = 'miter';
+                        ctx.lineCap = 'butt';
+                        ctx.strokeStyle = b.gameData.player === 1 ? 'rgba(0, 0, 0, 0.95)' : 'rgba(20, 20, 20, 0.95)'; 
+                        
+                        b.gameData.fractures.forEach((crack, idx) => {
+                            let activationThreshold = idx * (1 / b.gameData.fractures.length);
+                            if (damageRatio > activationThreshold) {
+                                let crackProgress = (damageRatio - activationThreshold) * b.gameData.fractures.length;
+                                crackProgress = Math.min(1, Math.max(0, crackProgress));
+                                
+                                if (crackProgress > 0) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(crack[0].x, crack[0].y);
+                                    let targetPointIndex = crackProgress * (crack.length - 1);
+                                    let floorIdx = Math.floor(targetPointIndex);
+                                    
+                                    for(let i = 1; i <= floorIdx; i++) {
+                                        ctx.lineTo(crack[i].x, crack[i].y);
+                                    }
+                                    
+                                    if (floorIdx < crack.length - 1) {
+                                        let rem = targetPointIndex - floorIdx;
+                                        let lastX = crack[floorIdx].x + (crack[floorIdx+1].x - crack[floorIdx].x) * rem;
+                                        let lastY = crack[floorIdx].y + (crack[floorIdx+1].y - crack[floorIdx].y) * rem;
+                                        ctx.lineTo(lastX, lastY);
+                                    }
+                                    ctx.stroke();
+
+                                    if (crackProgress > 0.55 && crack.length > 2) {
+                                        ctx.save();
+                                        ctx.beginPath();
+                                        ctx.moveTo(crack[1].x, crack[1].y);
+                                        let branchX = crack[1].x + (crack[2].y - crack[1].y) * 0.3;
+                                        let branchY = crack[1].y - (crack[2].x - crack[1].x) * 0.3;
+                                        ctx.lineTo(branchX, branchY);
+                                        ctx.lineWidth *= 0.5;
+                                        ctx.stroke();
+                                        ctx.restore();
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    ctx.restore();
+                }
+				// ==========================================
+				// NEW: HEAVY CHUNK SHATTER EFFECT
+				// ==========================================
+				if (visualParticles.length > 0) {
+					ctx.save();
+					for (let i = visualParticles.length - 1; i >= 0; i--) {
+						let p = visualParticles[i];
+						
+						// Heavy friction so they barely move apart before dissolving
+						p.vx *= 0.85;   
+						p.vy *= 0.85;
+						p.spin *= 0.90;
+
+						p.x += p.vx;
+						p.y += p.vy;
+						p.rotation += p.spin;
+						p.life -= p.decay;
+
+						if (p.life <= 0) { 
+							visualParticles.splice(i, 1);
+							continue;
+						}
+
+						ctx.save();
+						ctx.translate(p.x, p.y);
+						ctx.rotate(p.rotation);
+						
+						// Linear fade out
+						ctx.globalAlpha = Math.max(0, p.life); 
+						ctx.fillStyle = p.color;
+						
+						// Draw the heavy wedge (pie slice)
+						ctx.beginPath();
+						ctx.moveTo(0, 0); // Start at the center of the shattered piece
+						ctx.arc(0, 0, p.radius, p.startAngle, p.endAngle);
+						ctx.closePath();
+						ctx.fill();
+						
+						// Optional: Draw a faint border so the chunks stand out from each other instantly
+						ctx.lineWidth = 1;
+						ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+						ctx.stroke();
+						
+						ctx.restore();
+					}
+					ctx.restore();
+				}
+            });
+			
+			// NEW: Draw the Forcefield Dome ON TOP of the pieces!
+			if (BOARD_CONFIG.wallEnabled) {
+				ctx.save();
+				
+				// Match the visual radius to the new physics offset we added in initBoard
+				const visualRadius = DOHYO_RADIUS + 25; 
+
+				// 1. The solid "glass" base resting exactly on the collision line
+				ctx.beginPath(); 
+				ctx.arc(CENTER, CENTER, visualRadius, 0, 2 * Math.PI);
+				ctx.lineWidth = 4; 
+				ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+				ctx.stroke();
+
+				/* 2. The outer glowing rim (Soft white/silver)
+				ctx.beginPath(); 
+				ctx.arc(CENTER, CENTER, visualRadius + 8, 0, 2 * Math.PI);
+				ctx.lineWidth = 12; 
+				ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)'; 
+				ctx.shadowColor = '#FFFFFF'; 
+				ctx.shadowBlur = 15;
+				ctx.stroke();
+
+				// 3. Soft White Forcefield Inner Dome Overlay */
+				const domeGradient = ctx.createRadialGradient(
+					CENTER, CENTER, visualRadius - 40, // Start fading 40px inward
+					CENTER, CENTER, visualRadius       // End at the edge
+				);
+				domeGradient.addColorStop(0, 'rgba(255, 255, 255, 0)');     
+				domeGradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.05)'); 
+				domeGradient.addColorStop(1, 'rgba(255, 255, 255, 0.25)');   
+
+				ctx.beginPath(); 
+				ctx.arc(CENTER, CENTER, visualRadius, 0, 2 * Math.PI);
+				ctx.fillStyle = domeGradient;
+				ctx.fill();
+
+				ctx.restore();
+			}
+
+            const drawAimLine = (piece, targetPos) => {
+                const pMaxDrag = piece.gameData.maxDrag;
+                const start = piece.position, end = targetPos;
+                let dx = start.x - end.x, dy = start.y - end.y, distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > pMaxDrag) { const s = pMaxDrag / distance; dx *= s; dy *= s; distance = pMaxDrag; }
+                
+                if (piece.gameData.type === 'Knight') {
+                    ctx.beginPath(); ctx.arc(start.x, start.y, distance / pMaxDrag * piece.gameData.maxHop, 0, 2 * Math.PI);
+                    ctx.lineWidth = 2; ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(192, 192, 192, 0.8)' : 'rgba(138, 43, 226, 0.8)'; ctx.setLineDash([8, 8]); ctx.stroke(); ctx.setLineDash([]); 
+                }
+                ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(start.x + dx, start.y + dy); ctx.lineWidth = 4;
+                ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(255, 255, 255, 0.5)' : 'rgba(138, 43, 226, 0.5)'; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]); 
+            };
+
+            if (gameState.activePiece && gameState.status === 'PLAYING') {
+                drawAimLine(gameState.activePiece, gameState.mousePos);
+            }
+            
+            if (gameState.opponentAim && gameState.status === 'PLAYING') {
+                const oppPiece = Composite.allBodies(engine.world).find(b => b.gameData && b.gameData.id === gameState.opponentAim.pieceId);
+                if (oppPiece) drawAimLine(oppPiece, gameState.opponentAim.mousePos);
+            }
+        });
+
+        Render.run(render); 
+    </script>
+</body>
+</html>
