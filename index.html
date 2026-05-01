@@ -678,17 +678,17 @@
 			?
 		</div>
 		<div id="author-credit">
-		    a game by <a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="credit-link">theodore m.</a>
-		    <span class="support-divider">|</span> 
-		    <a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="support-link" aria-label="Support the developer">
-		        <svg class="coffee-icon" width="1.2em" height="1.2em" style="vertical-align: -0.15em;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-		            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-		            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-		            <line x1="6" y1="1" x2="6" y2="4"></line>
-		            <line x1="10" y1="1" x2="10" y2="4"></line>
-		            <line x1="14" y1="1" x2="14" y2="4"></line>
-		        </svg>
-		    </a>
+			a game by <a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="credit-link">theodore m.</a>
+			<span class="support-divider">|</span> 
+			<a href="https://tiptopjar.com/theodorem" target="_blank" rel="noopener noreferrer" class="support-link" aria-label="Support the developer">
+				<svg class="coffee-icon" width="1.2em" height="1.2em" style="vertical-align: -0.15em;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+					<path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+					<line x1="6" y1="1" x2="6" y2="4"></line>
+					<line x1="10" y1="1" x2="10" y2="4"></line>
+					<line x1="14" y1="1" x2="14" y2="4"></line>
+				</svg>
+			</a>
 		</div>
 	</div>
 
@@ -2134,47 +2134,48 @@
             });
             Body.setMass(piece, config.mass);
 
-            // Procedurally generate the fracture lines for this specific piece
-            const fractures = [];
-            const numCracks = 6; 
-            for (let i = 0; i < numCracks; i++) {
-                let crack = [];
-                let startAngle = (i / numCracks) * Math.PI * 2 + (Math.random() - 0.5); 
-                let currentR = config.radius; 
-                crack.push({ x: Math.cos(startAngle) * currentR, y: Math.sin(startAngle) * currentR });
-                
-                let segments = 3 + Math.floor(Math.random() * 3);
-                let prevAngle = startAngle;
-                for (let j = 0; j < segments; j++) {
-                    currentR -= (config.radius / segments) * (0.8 + Math.random() * 0.5); 
-                    if (currentR < -config.radius * 0.3) break; 
-                    prevAngle += (Math.random() - 0.5) * 1.2; 
-                    crack.push({ x: Math.cos(prevAngle) * currentR, y: Math.sin(prevAngle) * currentR });
-                }
-                fractures.push(crack);
-            }
-
-            // --- THE FIX: Smart ID synchronization ---
             let assignedId;
             if (forcedId !== null) {
                 assignedId = forcedId;
-                // Force the global counter to stay ahead of any synced network IDs
-                if (assignedId >= globalPieceIdCounter) {
-                    globalPieceIdCounter = assignedId + 1; 
-                }
+                if (assignedId >= globalPieceIdCounter) globalPieceIdCounter = assignedId + 1; 
             } else {
                 assignedId = globalPieceIdCounter++;
             }
-            // -----------------------------------------
 
             piece.gameData = { 
                 player: player, type: type, radius: config.radius, maxDrag: config.maxDrag, path2D: config.path2D, maxHop: config.maxHop,
                 isHopping: false, hopStartPos: null, targetHopDistance: 0, 
                 maxSturdiness: config.maxSturdiness, sturdiness: forcedSturdiness !== null ? forcedSturdiness : config.maxSturdiness,
-                fractures: fractures,
-                id: assignedId // Use our safely calculated ID
+                fractures: [], // Start with ZERO cracks!
+                id: assignedId 
             };
             return piece;
+        }
+
+        // --- NEW: Dynamic Crack Generator ---
+        function generateImpactCrack(piece, localAngle) {
+            // Cap the number of cracks so a piece isn't completely blacked out by a million tiny bumps
+            if (piece.gameData.fractures.length > 8) return;
+
+            let crack = [];
+            // Jitter the exact starting angle slightly so multiple hits to the same spot don't overlap perfectly
+            let startAngle = localAngle + (Math.random() - 0.5) * 0.4;
+            let currentR = piece.gameData.radius;
+
+            crack.push({ x: Math.cos(startAngle) * currentR, y: Math.sin(startAngle) * currentR });
+
+            let segments = 3 + Math.floor(Math.random() * 3);
+            let prevAngle = startAngle;
+
+            for (let j = 0; j < segments; j++) {
+                currentR -= (piece.gameData.radius / segments) * (0.8 + Math.random() * 0.5);
+                if (currentR < -piece.gameData.radius * 0.2) break;
+                prevAngle += (Math.random() - 0.5) * 1.0;
+                crack.push({ x: Math.cos(prevAngle) * currentR, y: Math.sin(prevAngle) * currentR });
+            }
+
+            // Push an object containing the points and an animation progress tracker
+            piece.gameData.fractures.push({ points: crack, progress: 0 });
         }
 
         function buildWall() {
@@ -2978,7 +2979,7 @@
                                             if (odist < (b.gameData.radius + other.gameData.radius)) {
                                                 let strikeF = 0.08 * other.mass;
                                                 Body.applyForce(other, other.position, { x: (ox/odist) * strikeF, y: (oy/odist) * strikeF });
-                                                other.gameData.sturdiness -= 30;
+                                                other.gameData.sturdiness -= 15;
                                             }
                                         }
                                     }
@@ -3237,7 +3238,9 @@
                                     Body.applyForce(other, other.position, { x: nX * strikeForce, y: nY * strikeForce });
                                     
                                     // Knight shockwave deals flat damage
-                                    other.gameData.sturdiness -= 30;
+                                    other.gameData.sturdiness -= 15;
+									let angleOnOther = Math.atan2(-nY, -nX) - other.angle; 
+									generateImpactCrack(other, angleOnOther);
 
                                     AudioEngine.playClack(1.0, (b.position.x - CENTER) / (CANVAS_SIZE / 2));
                                 }
@@ -3345,44 +3348,65 @@
 
         // KINETIC DAMAGE EVENT LISTENER
         Events.on(engine, 'collisionStart', (e) => {
-			const wallHitsThisTick = new Set(); // Track pieces that hit a wall this frame
+            const wallHitsThisTick = new Set(); 
 
-			e.pairs.forEach((p) => {
-				if (p.bodyA.gameData && p.bodyB.gameData) {
-					const impactVel = Math.sqrt(Math.pow(p.bodyA.velocity.x - p.bodyB.velocity.x, 2) + Math.pow(p.bodyA.velocity.y - p.bodyB.velocity.y, 2));
-					if (impactVel > 0.5) {
-						AudioEngine.playClack(Math.min(impactVel / 15, 1.0), (((p.bodyA.position.x + p.bodyB.position.x) / 2) - CENTER) / (CANVAS_SIZE / 2));
-						
-						p.bodyA.gameData.lastImpactVel = impactVel;
+            e.pairs.forEach((p) => {
+                if (p.bodyA.gameData && p.bodyB.gameData) {
+                    const impactVel = Math.sqrt(Math.pow(p.bodyA.velocity.x - p.bodyB.velocity.x, 2) + Math.pow(p.bodyA.velocity.y - p.bodyB.velocity.y, 2));
+                    
+                    if (impactVel > 0.5) {
+                        AudioEngine.playClack(Math.min(impactVel / 15, 1.0), (((p.bodyA.position.x + p.bodyB.position.x) / 2) - CENTER) / (CANVAS_SIZE / 2));
+                        
+                        p.bodyA.gameData.lastImpactVel = impactVel;
                         p.bodyB.gameData.lastImpactVel = impactVel;
-						
-						if (networkMode !== 'GUEST') {
-							let isWallA = p.bodyA.gameData.type === 'Wall';
-							let isWallB = p.bodyB.gameData.type === 'Wall';
-							
-							let massA = isWallA ? 50 : p.bodyA.mass;
-							let massB = isWallB ? 50 : p.bodyB.mass;
+                        
+                        // --- NEW: DYNAMIC VISUAL CRACKS AT IMPACT POINT ---
+                        // 1. Calculate the vector from A to B
+                        let dx = p.bodyB.position.x - p.bodyA.position.x;
+                        let dy = p.bodyB.position.y - p.bodyA.position.y;
 
-							// Apply damage to Body A
-							if (!isWallA) {
-								if (!isWallB || !wallHitsThisTick.has(p.bodyA.gameData.id)) {
-									p.bodyA.gameData.sturdiness -= (impactVel * massB * DAMAGE_SCALAR);
-									if (isWallB) wallHitsThisTick.add(p.bodyA.gameData.id);
-								}
-							}
-							
-							// Apply damage to Body B
-							if (!isWallB) {
-								if (!isWallA || !wallHitsThisTick.has(p.bodyB.gameData.id)) {
-									p.bodyB.gameData.sturdiness -= (impactVel * massA * DAMAGE_SCALAR);
-									if (isWallA) wallHitsThisTick.add(p.bodyB.gameData.id);
-								}
-							}
-						}
-					}
-				}
-			});
-		});
+                        // 2. Only generate cracks on decent hits to avoid visual clutter
+                        if (impactVel > 2.5 || Math.random() > 0.8) {
+                            if (p.bodyA.gameData.type !== 'Wall') {
+                                // Angle of B relative to A, minus A's current physical rotation
+                                let angleOnA = Math.atan2(dy, dx) - p.bodyA.angle;
+                                generateImpactCrack(p.bodyA, angleOnA);
+                            }
+                            if (p.bodyB.gameData.type !== 'Wall') {
+                                // Angle of A relative to B, minus B's current physical rotation
+                                let angleOnB = Math.atan2(-dy, -dx) - p.bodyB.angle;
+                                generateImpactCrack(p.bodyB, angleOnB);
+                            }
+                        }
+                        // ------------------------------------------------
+                        
+                        if (networkMode !== 'GUEST') {
+                            let isWallA = p.bodyA.gameData.type === 'Wall';
+                            let isWallB = p.bodyB.gameData.type === 'Wall';
+                            
+                            let massA = isWallA ? 50 : p.bodyA.mass;
+                            let massB = isWallB ? 50 : p.bodyB.mass;
+
+                            // Apply damage to Body A
+                            if (!isWallA) {
+                                if (!isWallB || !wallHitsThisTick.has(p.bodyA.gameData.id)) {
+                                    p.bodyA.gameData.sturdiness -= (impactVel * massB * DAMAGE_SCALAR);
+                                    if (isWallB) wallHitsThisTick.add(p.bodyA.gameData.id);
+                                }
+                            }
+                            
+                            // Apply damage to Body B
+                            if (!isWallB) {
+                                if (!isWallA || !wallHitsThisTick.has(p.bodyB.gameData.id)) {
+                                    p.bodyB.gameData.sturdiness -= (impactVel * massA * DAMAGE_SCALAR);
+                                    if (isWallA) wallHitsThisTick.add(p.bodyB.gameData.id);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
 
         const workerCode = `
 			let interval;
@@ -3447,48 +3471,49 @@
                     const hpRatio = Math.max(0, b.gameData.sturdiness / b.gameData.maxSturdiness);
                     const damageRatio = 1 - hpRatio;
 
-                    if (damageRatio > 0.05 && b.gameData.fractures) {
-                        ctx.lineWidth = 0.1 + (damageRatio * 2.5); // Using your tweaked base width!
+                    // Draw if there is ANY damage and fractures exist
+                    if (damageRatio > 0.05 && b.gameData.fractures && b.gameData.fractures.length > 0) {
+                        ctx.lineWidth = 0.1 + (damageRatio * 2.5); 
                         ctx.lineJoin = 'miter';
                         ctx.lineCap = 'butt';
                         ctx.strokeStyle = b.gameData.player === 1 ? 'rgba(0, 0, 0, 0.95)' : 'rgba(20, 20, 20, 0.95)'; 
                         
-                        b.gameData.fractures.forEach((crack, idx) => {
-                            let activationThreshold = idx * (1 / b.gameData.fractures.length);
-                            if (damageRatio > activationThreshold) {
-                                let crackProgress = (damageRatio - activationThreshold) * b.gameData.fractures.length;
-                                crackProgress = Math.min(1, Math.max(0, crackProgress));
-                                
-                                if (crackProgress > 0) {
-                                    ctx.beginPath();
-                                    ctx.moveTo(crack[0].x, crack[0].y);
-                                    let targetPointIndex = crackProgress * (crack.length - 1);
-                                    let floorIdx = Math.floor(targetPointIndex);
-                                    
-                                    for(let i = 1; i <= floorIdx; i++) {
-                                        ctx.lineTo(crack[i].x, crack[i].y);
-                                    }
-                                    
-                                    if (floorIdx < crack.length - 1) {
-                                        let rem = targetPointIndex - floorIdx;
-                                        let lastX = crack[floorIdx].x + (crack[floorIdx+1].x - crack[floorIdx].x) * rem;
-                                        let lastY = crack[floorIdx].y + (crack[floorIdx+1].y - crack[floorIdx].y) * rem;
-                                        ctx.lineTo(lastX, lastY);
-                                    }
-                                    ctx.stroke();
+                        b.gameData.fractures.forEach((crackObj) => {
+                            // Animate the crack shooting inward
+                            crackObj.progress += 0.15; 
+                            if (crackObj.progress > 1) crackObj.progress = 1;
 
-                                    if (crackProgress > 0.55 && crack.length > 2) {
-                                        ctx.save();
-                                        ctx.beginPath();
-                                        ctx.moveTo(crack[1].x, crack[1].y);
-                                        let branchX = crack[1].x + (crack[2].y - crack[1].y) * 0.3;
-                                        let branchY = crack[1].y - (crack[2].x - crack[1].x) * 0.3;
-                                        ctx.lineTo(branchX, branchY);
-                                        ctx.lineWidth *= 0.5;
-                                        ctx.stroke();
-                                        ctx.restore();
-                                    }
-                                }
+                            const crack = crackObj.points;
+                            const crackProgress = crackObj.progress;
+
+                            ctx.beginPath();
+                            ctx.moveTo(crack[0].x, crack[0].y);
+                            
+                            let targetPointIndex = crackProgress * (crack.length - 1);
+                            let floorIdx = Math.floor(targetPointIndex);
+                            
+                            for(let i = 1; i <= floorIdx; i++) {
+                                ctx.lineTo(crack[i].x, crack[i].y);
+                            }
+                            
+                            if (floorIdx < crack.length - 1) {
+                                let rem = targetPointIndex - floorIdx;
+                                let lastX = crack[floorIdx].x + (crack[floorIdx+1].x - crack[floorIdx].x) * rem;
+                                let lastY = crack[floorIdx].y + (crack[floorIdx+1].y - crack[floorIdx].y) * rem;
+                                ctx.lineTo(lastX, lastY);
+                            }
+                            ctx.stroke();
+
+                            if (crackProgress > 0.55 && crack.length > 2) {
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.moveTo(crack[1].x, crack[1].y);
+                                let branchX = crack[1].x + (crack[2].y - crack[1].y) * 0.3;
+                                let branchY = crack[1].y - (crack[2].x - crack[1].x) * 0.3;
+                                ctx.lineTo(branchX, branchY);
+                                ctx.lineWidth *= 0.5;
+                                ctx.stroke();
+                                ctx.restore();
                             }
                         });
                     }
