@@ -2,7 +2,7 @@
 
 [![Play Now](https://img.shields.io/badge/Play_Now-Live_on_GitHub_Pages-success?style=for-the-badge)](https://VUVRTroopers.github.io/shess/)
 
-**Shess** is a high-impact, physics-driven twist on traditional chess. Instead of moving pieces to static squares, you calculate trajectories, manage momentum, and flick your pieces across a circular arena to shatter the opponents king or knock it out of bounds. It's what happens when chess meets billiards, shuffleboard, and sumo wrestling.
+**Shess** is a high-impact, physics-driven twist on traditional chess. Instead of moving pieces to static squares, you calculate trajectories, manage momentum, and flick your pieces across a circular arena to shatter the opponents king or knock it out of bounds. It's what happens when chess meets billiards and shuffleboard.
 
 ![Shess Gameplay Preview](./preview-image.png)
 
@@ -12,7 +12,7 @@
 * **Online Multiplayer (No Server Required):** Seamless peer-to-peer online play using `PeerJS` and WebRTC. Generate a room code, send it to a friend, and play instantly.
 * **Advanced CPU AI:** Practice against an AI that calculates trajectories, values pieces, and executes kinetic attacks based on a Minimax depth-simulation engine.
 * **Deep Customization:** Open the hood and tweak the physics engine in real-time. Adjust the mass, friction, bounce, and drag of any piece, or load wild presets like "Ice Rink," "Glass Cannons," or "Sumo."
-* **Visuals & Audio:** Pprocedural shatter animations, kinetic shockwaves, and dynamic audio scaling based on impact velocity. 
+* **Visuals & Audio:** Procedural shatter animations, kinetic shockwaves, and dynamic audio scaling based on impact velocity. 
 
 ## 🎮 How to Play
 
