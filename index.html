@@ -2979,7 +2979,7 @@
                                             if (odist < (b.gameData.radius + other.gameData.radius)) {
                                                 let strikeF = 0.08 * other.mass;
                                                 Body.applyForce(other, other.position, { x: (ox/odist) * strikeF, y: (oy/odist) * strikeF });
-                                                other.gameData.sturdiness -= 15;
+                                                other.gameData.sturdiness -= 5;
                                             }
                                         }
                                     }
@@ -3238,7 +3238,7 @@
                                     Body.applyForce(other, other.position, { x: nX * strikeForce, y: nY * strikeForce });
                                     
                                     // Knight shockwave deals flat damage
-                                    other.gameData.sturdiness -= 15;
+                                    other.gameData.sturdiness -= 5;
 									let angleOnOther = Math.atan2(-nY, -nX) - other.angle; 
 									generateImpactCrack(other, angleOnOther);
 
