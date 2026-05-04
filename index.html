@@ -2977,8 +2977,16 @@
                                             let ox = other.position.x - b.position.x, oy = other.position.y - b.position.y;
                                             let odist = Math.max(0.001, Math.sqrt(ox*ox + oy*oy));
                                             if (odist < (b.gameData.radius + other.gameData.radius)) {
-                                                let strikeF = 0.02 * other.mass;
-                                                Body.applyForce(other, other.position, { x: (ox/odist) * strikeF, y: (oy/odist) * strikeF });
+                                                let forceOnTarget = 0.015 * other.mass;
+                                                let forceOnKnight = 0.015 * b.mass;
+
+                                                let nX = ox / odist;
+                                                let nY = oy / odist;
+
+                                                Body.applyForce(other, other.position, { x: nX * forceOnTarget, y: nY * forceOnTarget });
+                                                
+                                                Body.applyForce(b, b.position, { x: -nX * forceOnKnight, y: -nY * forceOnKnight });
+                                                
                                                 other.gameData.sturdiness -= 5;
                                             }
                                         }
@@ -3234,9 +3242,19 @@
                                     let nX = dx / overlapDist;
                                     let nY = dy / overlapDist;
 
-                                    let strikeForce = 0.02 * other.mass;
-                                    Body.applyForce(other, other.position, { x: nX * strikeForce, y: nY * strikeForce });
+                                    // --- NEW: DISTRIBUTED RECOIL PHYSICS ---
+                                    // We lowered the scalar slightly from 0.08 to 0.06, because since BOTH 
+                                    // pieces are now moving away from each other, they will separate very quickly!
+                                    let forceOnTarget = 0.06 * other.mass;
+                                    let forceOnKnight = 0.06 * b.mass; 
+
+                                    // Push the target piece away (Positive nX, nY)
+                                    Body.applyForce(other, other.position, { x: nX * forceOnTarget, y: nY * forceOnTarget });
                                     
+                                    // Push the hopping piece backwards (Negative nX, nY)
+                                    Body.applyForce(b, b.position, { x: -nX * forceOnKnight, y: -nY * forceOnKnight });
+                                    // ---------------------------------------
+
                                     // Knight shockwave deals flat damage
                                     other.gameData.sturdiness -= 5;
 									let angleOnOther = Math.atan2(-nY, -nX) - other.angle; 
