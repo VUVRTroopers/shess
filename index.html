@@ -1015,7 +1015,7 @@
         const MAX_HOP_RADIUS = 100; 
         const P1_PROMO_LINE = 650; const P2_PROMO_LINE = 150;
         const P1_COLOR = '#C0C0C0'; const P2_COLOR = '#2b2b2b'; 
-        const DAMAGE_SCALAR = 0.08; 
+        const DAMAGE_SCALAR = 0.02; 
 
         const PATHS = {
             King:   "M 12 2 L 12 4 L 10 4 L 10 6 L 12 6 L 12 8 L 10 8 L 10 10 L 14 10 L 14 8 L 12 8 L 12 6 L 14 6 L 14 4 L 12 4 L 12 2 z M 8 11 L 8 14 L 16 14 L 16 11 L 8 11 z M 8 15 L 8 19 L 16 19 L 16 15 L 8 15 z M 6 20 L 6 22 L 18 22 L 18 20 L 6 20 z",
@@ -2977,7 +2977,7 @@
                                             let ox = other.position.x - b.position.x, oy = other.position.y - b.position.y;
                                             let odist = Math.max(0.001, Math.sqrt(ox*ox + oy*oy));
                                             if (odist < (b.gameData.radius + other.gameData.radius)) {
-                                                let strikeF = 0.08 * other.mass;
+                                                let strikeF = 0.02 * other.mass;
                                                 Body.applyForce(other, other.position, { x: (ox/odist) * strikeF, y: (oy/odist) * strikeF });
                                                 other.gameData.sturdiness -= 5;
                                             }
@@ -3234,7 +3234,7 @@
                                     let nX = dx / overlapDist;
                                     let nY = dy / overlapDist;
 
-                                    let strikeForce = 0.08 * other.mass;
+                                    let strikeForce = 0.02 * other.mass;
                                     Body.applyForce(other, other.position, { x: nX * strikeForce, y: nY * strikeForce });
                                     
                                     // Knight shockwave deals flat damage
