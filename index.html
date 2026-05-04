@@ -2971,7 +2971,9 @@
                                     const d = Math.sqrt(Math.pow(b.position.x - b.gameData.hopStartPos.x, 2) + Math.pow(b.position.y - b.gameData.hopStartPos.y, 2));
                                     if (d >= b.gameData.targetHopDistance || b.speed < 0.5) { 
                                         b.gameData.isHopping = false; 
-                                        b.collisionFilter.mask = 0xFFFFFFFF; 
+                                        b.collisionFilter.mask = 0xFFFFFFFF;
+										Body.setVelocity(b, { x: 0, y: 0 });
+										Body.setAngularVelocity(b, 0);
                                         for (let other of currentSimBodies) {
                                             if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
                                             let ox = other.position.x - b.position.x, oy = other.position.y - b.position.y;
@@ -3227,7 +3229,10 @@
                         const dist = Math.sqrt(Math.pow(b.position.x - b.gameData.hopStartPos.x, 2) + Math.pow(b.position.y - b.gameData.hopStartPos.y, 2));
                         if (dist >= b.gameData.targetHopDistance || b.speed < 0.5) { 
                             b.gameData.isHopping = false; 
-                            b.collisionFilter.mask = 0xFFFFFFFF; 
+                            b.collisionFilter.mask = 0xFFFFFFFF;
+							
+							Body.setVelocity(b, { x: 0, y: 0 });
+                            Body.setAngularVelocity(b, 0);
 
                             for (let other of bodies) {
                                 if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
