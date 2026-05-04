@@ -2972,8 +2972,8 @@
                                     if (d >= b.gameData.targetHopDistance || b.speed < 0.5) { 
                                         b.gameData.isHopping = false; 
                                         b.collisionFilter.mask = 0xFFFFFFFF;
-										Body.setVelocity(b, { x: b.velocity.x * 0.15, y: b.velocity.y * 0.15 });
-										Body.setAngularVelocity(b, b.angularVelocity * 0.15);
+										Body.setVelocity(b, { x: b.velocity.x * 0.85, y: b.velocity.y * 0.85 });
+										Body.setAngularVelocity(b, b.angularVelocity * 0.85);
                                         for (let other of currentSimBodies) {
                                             if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
                                             let ox = other.position.x - b.position.x, oy = other.position.y - b.position.y;
@@ -3231,8 +3231,8 @@
                             b.gameData.isHopping = false; 
                             b.collisionFilter.mask = 0xFFFFFFFF;
 							
-							Body.setVelocity(b, { x: b.velocity.x * 0.15, y: b.velocity.y * 0.15 });
-                            Body.setAngularVelocity(b, b.angularVelocity * 0.15);
+							Body.setVelocity(b, { x: b.velocity.x * 0.85, y: b.velocity.y * 0.85 });
+                            Body.setAngularVelocity(b, b.angularVelocity * 0.85);
 
                             for (let other of bodies) {
                                 if (other === b || !other.gameData || other.gameData.isHopping || other.gameData.type === 'Wall') continue;
