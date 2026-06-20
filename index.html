@@ -3633,18 +3633,81 @@
 			}
 
             const drawAimLine = (piece, targetPos) => {
-                const pMaxDrag = piece.gameData.maxDrag;
-                const start = piece.position, end = targetPos;
-                let dx = start.x - end.x, dy = start.y - end.y, distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance > pMaxDrag) { const s = pMaxDrag / distance; dx *= s; dy *= s; distance = pMaxDrag; }
-                
-                if (piece.gameData.type === 'Knight') {
-                    ctx.beginPath(); ctx.arc(start.x, start.y, distance / pMaxDrag * piece.gameData.maxHop, 0, 2 * Math.PI);
-                    ctx.lineWidth = 2; ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(192, 192, 192, 0.8)' : 'rgba(138, 43, 226, 0.8)'; ctx.setLineDash([8, 8]); ctx.stroke(); ctx.setLineDash([]); 
-                }
-                ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(start.x + dx, start.y + dy); ctx.lineWidth = 4;
-                ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(255, 255, 255, 0.5)' : 'rgba(138, 43, 226, 0.5)'; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]); 
-            };
+			    const pMaxDrag = piece.gameData.maxDrag;
+			    const start = piece.position;
+			    const end = targetPos;
+			    
+			    // 1. Calculate raw drag distance and vector
+			    let dx = start.x - end.x;
+			    let dy = start.y - end.y;
+			    let distance = Math.sqrt(dx * dx + dy * dy);
+			    
+			    // Clamp to maximum drag distance
+			    if (distance > pMaxDrag) { 
+			        const s = pMaxDrag / distance; 
+			        dx *= s; 
+			        dy *= s; 
+			        distance = pMaxDrag; 
+			    }
+			    
+			    // Calculate 0.0 to 1.0 ratio of how hard the piece is being pulled
+			    const powerRatio = distance / pMaxDrag;
+			    
+			    // ========================================================
+			    // TWEAK 1: PROJECTED DISTANCE
+			    // ========================================================
+			    // In physics, travel distance correlates inversely with friction.
+			    // TUNE THIS SCALAR: Increase it to make all lines longer, decrease to make them shorter.
+			    // 0.06 is a good baseline to closely match Matter.js's stopping distance.
+			    const projectionScalar = 0.06; 
+			    
+			    // Avoid dividing by zero if a piece has 0 air friction (like in the IceRink preset!)
+			    const safeFriction = Math.max(0.005, piece.frictionAir); 
+			    const projectedDist = distance * (projectionScalar / safeFriction);
+			    
+			    // Normalize the vector (find the pure direction) and apply the projected distance
+			    let nX = dx / distance;
+			    let nY = dy / distance;
+			    if (distance === 0) { nX = 0; nY = 0; } // Failsafe
+			    
+			    const projectedX = start.x + (nX * projectedDist);
+			    const projectedY = start.y + (nY * projectedDist);
+			
+			    // --- Draw the Knight's Hop Radius ---
+			    if (piece.gameData.type === 'Knight') {
+			        ctx.beginPath(); 
+			        ctx.arc(start.x, start.y, powerRatio * piece.gameData.maxHop, 0, 2 * Math.PI);
+			        ctx.lineWidth = 2; 
+			        ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(192, 192, 192, 0.8)' : 'rgba(138, 43, 226, 0.8)'; 
+			        ctx.setLineDash([8, 8]); 
+			        ctx.stroke(); 
+			        ctx.setLineDash([]); 
+			    }
+			
+			    // ========================================================
+			    // TWEAK 2: DYNAMIC VELOCITY DASHES
+			    // ========================================================
+			    // At lowest power: 3px dash, 3px gap (tightly dotted line).
+			    // At max power: 18px dash, 12px gap (long, fast-looking dashes).
+			    const dashSize = 3 + (powerRatio * 15);
+			    const gapSize = 3 + (powerRatio * 9);
+			
+			    // --- Draw the Main Aim Line ---
+			    ctx.beginPath(); 
+			    ctx.moveTo(start.x, start.y); 
+			    
+			    // Draw to our new physics-projected coordinates instead of just the drag distance
+			    ctx.lineTo(projectedX, projectedY); 
+			    ctx.lineWidth = 4;
+			    ctx.strokeStyle = piece.gameData.player === 1 ? 'rgba(255, 255, 255, 0.5)' : 'rgba(138, 43, 226, 0.5)'; 
+			    
+			    // Apply our dynamically scaling dashes
+			    ctx.setLineDash([dashSize, gapSize]); 
+			    ctx.stroke(); 
+			    
+			    // Always reset the line dash when done so other UI elements don't get dashed borders!
+			    ctx.setLineDash([]); 
+			};
 
             if (gameState.activePiece && gameState.status === 'PLAYING') {
                 drawAimLine(gameState.activePiece, gameState.mousePos);
