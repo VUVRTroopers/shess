@@ -3659,7 +3659,7 @@
 			    // In physics, travel distance correlates inversely with friction.
 			    // TUNE THIS SCALAR: Increase it to make all lines longer, decrease to make them shorter.
 			    // 0.06 is a good baseline to closely match Matter.js's stopping distance.
-			    const projectionScalar = 0.06; 
+			    const projectionScalar = 0.11; 
 			    
 			    // Avoid dividing by zero if a piece has 0 air friction (like in the IceRink preset!)
 			    const safeFriction = Math.max(0.005, piece.frictionAir); 
